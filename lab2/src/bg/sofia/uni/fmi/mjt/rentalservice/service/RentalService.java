@@ -14,6 +14,9 @@ public class RentalService implements RentalServiceAPI {
 
     @Override
     public double rentUntil(Vehicle vehicle, LocalDateTime until) {
+//        if(isBooked(vehicle)){
+//            return -1;
+//        }
         vehicle.setEndOfReservationPeriod(until);
         long minutes = ChronoUnit.MINUTES.between(LocalDateTime.now(), until);
         if (minutes > 0) {
@@ -25,20 +28,27 @@ public class RentalService implements RentalServiceAPI {
     @Override
     public Vehicle findNearestAvailableVehicleInRadius(String type, Location location, double maxDistance) {
         Vehicle[] vehiclesInMethod = this.vehicles;
+        Vehicle nearestVehicle = null;
+        double minDistance = maxDistance;
         for (Vehicle vehicle : vehiclesInMethod) {
             if (vehicle.getType().equals(type)) {
-                double distance = calculateDistance(vehicle.getLocation(), location);
-                if (distance < maxDistance) {
-                    return vehicle;
+                double currentDistance = calculateDistance(vehicle.getLocation(), location);
+                if (!isBooked(vehicle) && currentDistance < minDistance) {
+                    minDistance = currentDistance;
+                    nearestVehicle = vehicle;
                 }
             }
         }
-        return null;
+        return nearestVehicle;
     }
 
     private double calculateDistance(Location a, Location b) {
         return Math.sqrt(
                 (b.getX() - a.getX()) * (b.getX() - a.getX()) + (b.getY() - a.getY()) * (b.getY() - a.getY()));
+    }
+
+    private boolean isBooked(Vehicle vehicle) {
+        return vehicle.getEndOfReservationPeriod().isAfter(LocalDateTime.now());
     }
 
     private Vehicle[] vehicles;

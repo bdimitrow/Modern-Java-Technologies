@@ -37,7 +37,7 @@ public class Car implements Vehicle {
 
     @Override
     public LocalDateTime getEndOfReservationPeriod() {
-        return this.reservationPeriod;
+        return reservationPeriod == null ? LocalDateTime.now() : reservationPeriod;
     }
 
     @Override

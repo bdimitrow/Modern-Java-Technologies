@@ -37,7 +37,7 @@ public class Scooter implements Vehicle {
 
     @Override
     public LocalDateTime getEndOfReservationPeriod() {
-        return reservationPeriod;
+        return reservationPeriod == null ? LocalDateTime.now() : reservationPeriod;
     }
 
     @Override
