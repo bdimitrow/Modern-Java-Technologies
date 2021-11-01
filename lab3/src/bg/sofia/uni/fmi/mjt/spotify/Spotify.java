@@ -4,8 +4,10 @@ import bg.sofia.uni.fmi.mjt.spotify.account.Account;
 import bg.sofia.uni.fmi.mjt.spotify.account.AccountType;
 import bg.sofia.uni.fmi.mjt.spotify.exceptions.AccountNotFoundException;
 import bg.sofia.uni.fmi.mjt.spotify.exceptions.PlayableNotFoundException;
+import bg.sofia.uni.fmi.mjt.spotify.exceptions.PlaylistCapacityExceededException;
 import bg.sofia.uni.fmi.mjt.spotify.exceptions.StreamingServiceException;
 import bg.sofia.uni.fmi.mjt.spotify.playable.Playable;
+import bg.sofia.uni.fmi.mjt.spotify.playlist.Playlist;
 
 public class Spotify implements StreamingService {
     public Spotify(Account[] accounts, Playable[] playableContent) {
@@ -13,46 +15,70 @@ public class Spotify implements StreamingService {
         this.playableContent = playableContent;
     }
 
-    public static int numberOfListenedContent = 0;
-
     @Override
     public void play(Account account, String title) throws AccountNotFoundException, PlayableNotFoundException {
-        if (account.getEmail() == null || title == null || title.isBlank()) {
-            throw new IllegalArgumentException();
+        checkForErrors(account, title);
+
+        Playable toBePlayed = findByTitle(title);
+        if (toBePlayed == null) {
+            throw new PlayableNotFoundException();
         }
-        if (!checkAccount(account)) {
-            throw new AccountNotFoundException();
+
+        account.listen(toBePlayed);
+    }
+
+    @Override
+    public void like(Account account, String title) throws AccountNotFoundException, PlayableNotFoundException, StreamingServiceException {
+        checkForErrors(account, title);
+
+        Account currentAccount = null;
+        for (Account acc : accounts) {
+            if (acc.equals(account)) {
+                currentAccount = acc;
+                break;
+            }
+        }
+        Playlist playlistOfLikedSongs = currentAccount.getLibrary().getLiked();
+        try {
+            playlistOfLikedSongs.add(findByTitle(title));
+        } catch (PlaylistCapacityExceededException e) {
+            e.printStackTrace();
+            throw new StreamingServiceException();
+        }
+
+    }
+
+    @Override
+    public Playable findByTitle(String title) throws PlayableNotFoundException {
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException();
         }
         if (!checkPlayable(title)) {
             throw new PlayableNotFoundException();
         }
 
         for (Playable playable : this.playableContent) {
-            if (title.equals(playable.getTitle())) {
-                playable.play();
-            }
-        }
-    }
-
-    @Override
-    public void like(Account account, String title) throws AccountNotFoundException, PlayableNotFoundException, StreamingServiceException {
-
-    }
-
-    @Override
-    public Playable findByTitle(String title) throws PlayableNotFoundException {
-        if (title == null || title.isBlank()) throw new IllegalArgumentException();
-        if (!checkPlayable(title)) throw new PlayableNotFoundException();
-        for (Playable playable : this.playableContent) {
-            if (playable.getTitle().equals(title) {
+            if (playable.getTitle().equals(title)) {
                 return playable;
             }
         }
+        return null;
     }
 
     @Override
     public Playable getMostPlayed() {
-        return null;
+        if (playableContent.length == 0) {
+            return null;
+        }
+
+        Playable mostPlayed = playableContent[0];
+        for (Playable playable : playableContent) {
+            if (playable.getTotalPlays() > mostPlayed.getTotalPlays()) {
+                mostPlayed = playable;
+            }
+        }
+
+        return mostPlayed;
     }
 
     @Override
@@ -61,6 +87,7 @@ public class Spotify implements StreamingService {
         for (Account account : accounts) {
             totalListenTime += account.getTotalListenTime();
         }
+
         return totalListenTime;
     }
 
@@ -74,6 +101,7 @@ public class Spotify implements StreamingService {
                 totalPlatformRevenue += acc.getAdsListenedTo() * 0.10;
             }
         }
+
         return totalPlatformRevenue;
     }
 
@@ -96,6 +124,18 @@ public class Spotify implements StreamingService {
         return false;
     }
 
-    private Account[] accounts;
-    private Playable[] playableContent;
+    private void checkForErrors(Account account, String title) throws AccountNotFoundException, PlayableNotFoundException {
+        if (account.getEmail() == null || title == null || title.isBlank()) {
+            throw new IllegalArgumentException();
+        }
+        if (!checkAccount(account)) {
+            throw new AccountNotFoundException();
+        }
+        if (!checkPlayable(title)) {
+            throw new PlayableNotFoundException();
+        }
+    }
+
+    private final Account[] accounts;
+    private final Playable[] playableContent;
 }
