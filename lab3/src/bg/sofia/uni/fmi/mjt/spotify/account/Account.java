@@ -33,7 +33,6 @@ public abstract class Account {
      * @param playable
      */
     public void listen(Playable playable) {
-        // TODO: add implementation here
         totalListenTime+= playable.getDuration();
         numberOfListenedContent+=1;
     }
@@ -59,12 +58,12 @@ public abstract class Account {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Account account = (Account) o;
-        return totalListenTime == account.totalListenTime && numberOfListenedContent == account.numberOfListenedContent && email.equals(account.email) && Objects.equals(library, account.library);
+        return Objects.equals(email, account.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email, library, totalListenTime, numberOfListenedContent);
+        return Objects.hash(email);
     }
 
     private String email;

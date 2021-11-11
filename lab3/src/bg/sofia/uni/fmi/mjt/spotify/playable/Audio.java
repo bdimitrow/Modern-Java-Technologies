@@ -2,6 +2,13 @@ package bg.sofia.uni.fmi.mjt.spotify.playable;
 
 public class Audio implements Playable {
 
+    public Audio(String title, String artist, int year, double dur) {
+        this.title = title;
+        this.artist = artist;
+        this.year = year;
+        this.duration = dur;
+    }
+
     @Override
     public String play() {
         ++numberOfPlays;
@@ -10,7 +17,7 @@ public class Audio implements Playable {
 
     @Override
     public int getTotalPlays() {
-        return numberOfPlays;
+        return this.numberOfPlays;
     }
 
     @Override
@@ -33,7 +40,7 @@ public class Audio implements Playable {
         return this.duration;
     }
 
-    private static int numberOfPlays = 0;
+    private int numberOfPlays = 0;
     private String title;
     private String artist;
     private int year;

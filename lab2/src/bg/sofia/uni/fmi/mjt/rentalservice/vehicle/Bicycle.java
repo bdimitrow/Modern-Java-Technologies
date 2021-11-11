@@ -3,6 +3,7 @@ package bg.sofia.uni.fmi.mjt.rentalservice.vehicle;
 import bg.sofia.uni.fmi.mjt.rentalservice.location.Location;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Bicycle implements Vehicle {
@@ -10,19 +11,19 @@ public class Bicycle implements Vehicle {
         this.id = UUID.randomUUID().toString();
     }
 
-    public Bicycle(Location location) {
-        this.id = UUID.randomUUID().toString();
+    public Bicycle(String id, Location location) {
+        this.id = id;
         this.location = location;
     }
 
     @Override
     public double getPricePerMinute() {
-        return this.PRICE_BICYCLE;
+        return 0.20;
     }
 
     @Override
     public String getType() {
-        return this.TYPE_BICYCLE;
+        return "BICYCLE";
     }
 
     @Override
@@ -41,13 +42,24 @@ public class Bicycle implements Vehicle {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Bicycle bicycle = (Bicycle) o;
+        return Objects.equals(id, bicycle.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
     public void setEndOfReservationPeriod(LocalDateTime until) {
         this.reservationPeriod = until;
     }
 
-    private final double PRICE_BICYCLE = 0.20;
-    private final String TYPE_BICYCLE = "BICYCLE";
-    private String id;
+    private final String id;
     private Location location;
     private LocalDateTime reservationPeriod;
 }

@@ -9,5 +9,5 @@ public interface QuoteService {
      * @return the quote for the given asset. If there is no quote, return null.
      * @throws IllegalArgumentException if the asset is null
      */
-    Quote getQuote( Asset asset);
+    Quote getQuote(Asset asset) throws IllegalArgumentException;
 }

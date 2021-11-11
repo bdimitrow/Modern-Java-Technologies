@@ -3,6 +3,7 @@ package bg.sofia.uni.fmi.mjt.rentalservice.vehicle;
 import bg.sofia.uni.fmi.mjt.rentalservice.location.Location;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Scooter implements Vehicle {
@@ -10,19 +11,19 @@ public class Scooter implements Vehicle {
         this.id = UUID.randomUUID().toString();
     }
 
-    public Scooter(Location location) {
-        this.id = UUID.randomUUID().toString();
+    public Scooter(String id, Location location) {
+        this.id = id;
         this.location = location;
     }
 
     @Override
     public double getPricePerMinute() {
-        return this.PRICE_SCOOTER;
+        return 0.30;
     }
 
     @Override
     public String getType() {
-        return this.TYPE_SCOOTER;
+        return "SCOOTER";
     }
 
     @Override
@@ -41,13 +42,24 @@ public class Scooter implements Vehicle {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Scooter scooter = (Scooter) o;
+        return Objects.equals(id, scooter.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
     public void setEndOfReservationPeriod(LocalDateTime until) {
         this.reservationPeriod = until;
     }
 
-    private final double PRICE_SCOOTER = 0.30;
-    private final String TYPE_SCOOTER = "SCOOTER";
-    private String id;
+    private final String id;
     private Location location;
     private LocalDateTime reservationPeriod;
 }

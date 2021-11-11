@@ -12,17 +12,24 @@ public class RentalService implements RentalServiceAPI {
 
     }
 
+    private boolean isVehicle(Vehicle vehicle) {
+        for (Vehicle v : this.vehicles) {
+            if (v.equals(vehicle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public double rentUntil(Vehicle vehicle, LocalDateTime until) {
-//        if(isBooked(vehicle)){
-//            return -1;
-//        }
+        if (isBooked(vehicle) || until.isBefore(LocalDateTime.now()) || !isVehicle(vehicle)) {
+            return -1;
+        }
         vehicle.setEndOfReservationPeriod(until);
         long minutes = ChronoUnit.MINUTES.between(LocalDateTime.now(), until);
-        if (minutes > 0) {
-            return minutes * vehicle.getPricePerMinute();
-        }
-        return -1;
+        return (minutes + 1) * vehicle.getPricePerMinute();
     }
 
     @Override
@@ -48,6 +55,9 @@ public class RentalService implements RentalServiceAPI {
     }
 
     private boolean isBooked(Vehicle vehicle) {
+        if (vehicle == null) {
+            return false;
+        }
         return vehicle.getEndOfReservationPeriod().isAfter(LocalDateTime.now());
     }
 
