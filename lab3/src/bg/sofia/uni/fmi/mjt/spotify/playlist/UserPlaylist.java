@@ -3,18 +3,22 @@ package bg.sofia.uni.fmi.mjt.spotify.playlist;
 import bg.sofia.uni.fmi.mjt.spotify.exceptions.PlaylistCapacityExceededException;
 import bg.sofia.uni.fmi.mjt.spotify.playable.Playable;
 
-public class UserPlaylist implements Playlist{
-    public UserPlaylist(String name, Playable[] playableContent){
+public class UserPlaylist implements Playlist {
+    private final static int PLAYLIST_CAPACITY = 20;
+
+    public UserPlaylist(String name) {
         this.playlistName = name;
-        this.playableContent=playableContent;
+        this.numberofPlayables = 0;
+        this.playableContent = new Playable[PLAYLIST_CAPACITY];
     }
 
     @Override
     public void add(Playable playable) throws PlaylistCapacityExceededException {
-        if(this.playableContent.length >= 20){
+        if (numberofPlayables >= PLAYLIST_CAPACITY) {
             throw new PlaylistCapacityExceededException();
         }
-        this.playableContent[this.playableContent.length]=playable;
+        this.playableContent[numberofPlayables] = playable;
+        ++numberofPlayables;
     }
 
     @Override
@@ -24,4 +28,5 @@ public class UserPlaylist implements Playlist{
 
     private String playlistName;
     private Playable[] playableContent;
+    private int numberofPlayables;
 }
