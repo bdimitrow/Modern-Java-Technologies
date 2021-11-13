@@ -2,8 +2,8 @@ package bg.sofia.uni.fmi.mjt.investment.wallet.asset;
 
 import java.util.Objects;
 
-public abstract class AbstractAsset implements Asset{
-    protected AbstractAsset(String id, String name){
+public abstract class AbstractAsset implements Asset {
+    protected AbstractAsset(String id, String name) {
         this.id = id;
         this.name = name;
     }

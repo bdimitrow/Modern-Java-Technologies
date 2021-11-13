@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.investment.wallet.asset;
 
-public class Fiat extends AbstractAsset{
+public class Fiat extends AbstractAsset {
     protected Fiat(String id, String name) {
         super(id, name);
     }
