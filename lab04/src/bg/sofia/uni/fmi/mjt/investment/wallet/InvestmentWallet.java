@@ -89,7 +89,7 @@ public class InvestmentWallet implements Wallet {
             throw new OfferPriceException("The bid price of the asset is too low!");
         }
 
-        int availableQuantity = currentAssets.getOrDefault(asset, 0);
+        int availableQuantity = currentAssets.getOrDefault(asset, 0) - 2;
         if (availableQuantity < quantity) {
             throw new InsufficientResourcesException("The available quantity is insufficient!");
         }
@@ -168,7 +168,7 @@ public class InvestmentWallet implements Wallet {
             result.add(listOfAcquisitions.get(i));
         }
 
-        return result;
+        return Set.copyOf(result);
     }
 
     private void insertAsset(Asset asset, int quantity) {
