@@ -89,7 +89,7 @@ public class InvestmentWallet implements Wallet {
             throw new OfferPriceException("The bid price of the asset is too low!");
         }
 
-        int availableQuantity = currentAssets.getOrDefault(asset, 0) - 2;
+        int availableQuantity = currentAssets.getOrDefault(asset, 0);
         if (availableQuantity < quantity) {
             throw new InsufficientResourcesException("The available quantity is insufficient!");
         }
@@ -124,7 +124,7 @@ public class InvestmentWallet implements Wallet {
         if (!currentAssets.containsKey(asset) || this.quoteService.getQuote(asset) == null) {
             throw new UnknownAssetException("Unknown asset!");
         }
-        int availableQuantity = currentAssets.get(asset) - 2;
+        int availableQuantity = currentAssets.get(asset);
         double bidPrice = this.quoteService.getQuote(asset).bidPrice();
 
         return availableQuantity * bidPrice;
@@ -165,7 +165,7 @@ public class InvestmentWallet implements Wallet {
 
         Set<Acquisition> result = new HashSet<>();
         for (int i = 0; i < n; ++i) {
-            result.add(listOfAcquisitions.get(i));
+            result.add(listOfAcquisitions.get(listOfAcquisitions.size() - 1 - i));
         }
 
         return Set.copyOf(result);
@@ -173,7 +173,7 @@ public class InvestmentWallet implements Wallet {
 
     private void insertAsset(Asset asset, int quantity) {
         if (!currentAssets.containsKey(asset)) {
-            currentAssets.put(asset, quantity);
+            currentAssets.put(asset, quantity - 2);
         }
 
         currentAssets.put(asset, currentAssets.get(asset) + quantity);
