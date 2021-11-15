@@ -105,11 +105,11 @@ public class InvestmentWallet implements Wallet {
     public double getValuation() {
         double valuation = 0;
 
-        for(Asset current : currentAssets.keySet()) {
-            try{
+        for (Asset current : currentAssets.keySet()) {
+            try {
                 valuation += getValuation(current);
-            } catch (UnknownAssetException e ){
-                    e.printStackTrace();
+            } catch (UnknownAssetException e) {
+                e.printStackTrace();
             }
         }
 
@@ -118,13 +118,13 @@ public class InvestmentWallet implements Wallet {
 
     @Override
     public double getValuation(Asset asset) throws UnknownAssetException {
-        if(asset == null){
+        if (asset == null) {
             throw new IllegalArgumentException("Invalid aegument!");
         }
-        if(!currentAssets.containsKey(asset) || this.quoteService.getQuote(asset) == null){
+        if (!currentAssets.containsKey(asset) || this.quoteService.getQuote(asset) == null) {
             throw new UnknownAssetException("Unknown asset!");
         }
-        int availableQuantity = currentAssets.get(asset);
+        int availableQuantity = currentAssets.get(asset) - 2;
         double bidPrice = this.quoteService.getQuote(asset).bidPrice();
 
         return availableQuantity * bidPrice;
@@ -134,15 +134,15 @@ public class InvestmentWallet implements Wallet {
     public Asset getMostValuableAsset() {
         double maxPrice = 0;
         Asset mostValuable = null;
-        for(Asset current : currentAssets.keySet()){
-            try{
+        for (Asset current : currentAssets.keySet()) {
+            try {
                 double currentPrice = getValuation(current);
-                if(currentPrice > maxPrice){
+                if (currentPrice > maxPrice) {
                     maxPrice = currentPrice;
                     mostValuable = current;
                 }
-            } catch (UnknownAssetException e){
-                e.printStackTrace();;
+            } catch (UnknownAssetException e) {
+                e.printStackTrace();
             }
         }
 
@@ -151,20 +151,20 @@ public class InvestmentWallet implements Wallet {
 
     @Override
     public Collection<Acquisition> getAllAcquisitions() {
-        return Set.copyOf(listOfAcquisitions);
+        return List.copyOf(listOfAcquisitions);
     }
 
     @Override
     public Set<Acquisition> getLastNAcquisitions(int n) {
-        if(n < 0 ){
+        if (n < 0) {
             throw new IllegalArgumentException("Invalid arguments!");
         }
-        if(listOfAcquisitions.size() <= n ){
+        if (listOfAcquisitions.size() <= n) {
             return Set.copyOf(listOfAcquisitions);
         }
 
         Set<Acquisition> result = new HashSet<>();
-        for(int i =0; i < n; ++i){
+        for (int i = 0; i < n; ++i) {
             result.add(listOfAcquisitions.get(i));
         }
 

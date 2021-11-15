@@ -1,8 +1,9 @@
 package bg.sofia.uni.fmi.mjt.investment.wallet.asset;
 
-public class Gold extends AbstractAsset {
-    protected Gold(String id, String name) {
-        super(id, name);
+public class Gold implements Asset {
+    public Gold(String id, String name) {
+        this.name = name;
+        this.id = id;
     }
 
     @Override
@@ -19,4 +20,7 @@ public class Gold extends AbstractAsset {
     public AssetType getType() {
         return AssetType.GOLD;
     }
+
+    private final String name;
+    private final String id;
 }

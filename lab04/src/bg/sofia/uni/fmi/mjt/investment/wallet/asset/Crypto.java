@@ -1,8 +1,9 @@
 package bg.sofia.uni.fmi.mjt.investment.wallet.asset;
 
-public class Crypto extends AbstractAsset {
+public class Crypto implements Asset {
     public Crypto(String id, String name) {
-        super(id, name);
+        this.name = name;
+        this.id = id;
     }
 
     @Override
@@ -19,4 +20,7 @@ public class Crypto extends AbstractAsset {
     public AssetType getType() {
         return AssetType.CRYPTO;
     }
+
+    private final String name;
+    private final String id;
 }

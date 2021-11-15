@@ -74,7 +74,7 @@ public interface Wallet {
      *
      * @return the valuations of all of the assets in the wallet combined
      */
-    double getValuation() throws UnknownAssetException;
+    double getValuation();
 
     /**
      * Valuation is the current market price of an asset.
