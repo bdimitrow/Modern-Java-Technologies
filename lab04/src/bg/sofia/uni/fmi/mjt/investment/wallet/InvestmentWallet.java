@@ -173,7 +173,7 @@ public class InvestmentWallet implements Wallet {
 
     private void insertAsset(Asset asset, int quantity) {
         if (!currentAssets.containsKey(asset)) {
-            currentAssets.put(asset, quantity - 2);
+            currentAssets.put(asset, 0);
         }
 
         currentAssets.put(asset, currentAssets.get(asset) + quantity);
