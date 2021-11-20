@@ -8,6 +8,7 @@ import java.util.*;
 public class DefaultPerson<I> implements Person<I> {
     public DefaultPerson(I id) {
         this.id = id;
+        this.receivedGifts = new ArrayList<>();
     }
 
 
@@ -17,8 +18,11 @@ public class DefaultPerson<I> implements Person<I> {
             throw new IllegalArgumentException();
         }
         List<Gift<?>> mostExpensive = new ArrayList<>();
-        while (n > 0) {
-            mostExpensive.add(findMostExpensiveReceivedGift());
+        List<Gift<?>> allGifts = this.receivedGifts;
+        while (n > 0 && !allGifts.isEmpty()) {
+            var currentMostExpensive = findMostExpensiveReceivedGift(allGifts);
+            mostExpensive.add(currentMostExpensive);
+            allGifts.remove(currentMostExpensive);
             --n;
         }
 
@@ -43,7 +47,18 @@ public class DefaultPerson<I> implements Person<I> {
 
     @Override
     public Collection<Gift<?>> getGiftsBy(Person<?> person) {
-        return null;
+        if (person == null) {
+            throw new IllegalArgumentException();
+        }
+
+        List<Gift<?>> giftsFromSender = new ArrayList<>();
+        for (Gift<?> currentGift : receivedGifts) {
+            if (currentGift.getSender().equals(person)) {
+                giftsFromSender.add(currentGift);
+            }
+        }
+
+        return List.copyOf(giftsFromSender);
     }
 
     @Override
@@ -60,12 +75,12 @@ public class DefaultPerson<I> implements Person<I> {
     }
 
     private final I id;
-    private Collection<Gift<?>> receivedGifts;
+    private List<Gift<?>> receivedGifts;
 
-    private Gift<?> findMostExpensiveReceivedGift() {
+    private Gift<?> findMostExpensiveReceivedGift(List<Gift<?>> list) {
         double maxPrice = 0;
         Gift<?> mostExpensive = null;
-        for (var current : receivedGifts) {
+        for (var current : list) {
             if (current.getPrice() > maxPrice) {
                 maxPrice = current.getPrice();
                 mostExpensive = current;

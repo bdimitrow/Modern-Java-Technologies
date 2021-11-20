@@ -42,6 +42,6 @@ public class DefaultPackingService<T extends Priceable> implements PackingServic
             throw new IllegalArgumentException();
         }
 
-        return Collections.unmodifiableCollection(gift.getItems());
+        return List.copyOf(gift.getItems());
     }
 }

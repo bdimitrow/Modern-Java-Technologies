@@ -3,6 +3,7 @@ package bg.sofia.uni.fmi.mjt.gifts.gift;
 import bg.sofia.uni.fmi.mjt.gifts.person.Person;
 
 import java.util.Collection;
+import java.util.List;
 
 public class BirthdayGift<T extends Priceable> implements Gift<T> {
     public BirthdayGift(Person<?> sender, Person<?> receiver, Collection<T> items) {
@@ -51,7 +52,7 @@ public class BirthdayGift<T extends Priceable> implements Gift<T> {
 
     @Override
     public Collection<T> getItems() {
-        return this.items;
+        return List.copyOf(this.items);
     }
 
     @Override

@@ -12,5 +12,5 @@ public interface DeliveryService {
      * @throws IllegalArgumentException if @receiver or @gift is null
      * @throws WrongReceiverException if @receiver is different from the receiver of the gift
      */
-    void send(Person<?> receiver, Gift<?> gift) throws WrongReceiverException;
+    void send(Person<?> receiver, Gift<?> gift);
 }

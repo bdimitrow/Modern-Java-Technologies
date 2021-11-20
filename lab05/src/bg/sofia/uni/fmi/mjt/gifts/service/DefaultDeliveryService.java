@@ -6,7 +6,7 @@ import bg.sofia.uni.fmi.mjt.gifts.person.Person;
 
 public class DefaultDeliveryService implements DeliveryService {
     @Override
-    public void send(Person<?> receiver, Gift<?> gift) throws WrongReceiverException {
+    public void send(Person<?> receiver, Gift<?> gift) {
         if (receiver == null || gift == null) {
             throw new IllegalArgumentException();
         }
