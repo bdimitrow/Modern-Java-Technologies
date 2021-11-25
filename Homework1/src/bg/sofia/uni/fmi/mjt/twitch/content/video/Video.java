@@ -1,4 +1,7 @@
 package bg.sofia.uni.fmi.mjt.twitch.content.video;
 
-public class Video {
+import bg.sofia.uni.fmi.mjt.twitch.content.Content;
+
+public interface Video extends Content {
+
 }

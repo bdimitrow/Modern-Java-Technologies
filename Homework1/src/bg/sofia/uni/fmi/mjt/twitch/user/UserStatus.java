@@ -1,4 +1,5 @@
 package bg.sofia.uni.fmi.mjt.twitch.user;
 
-public class UserStatus {
+public enum UserStatus {
+    STREAMING, WATCHING, IDLE
 }
