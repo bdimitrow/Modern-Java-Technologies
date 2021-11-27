@@ -1,13 +1,13 @@
 package bg.sofia.uni.fmi.mjt.twitch.content.video;
 
+import bg.sofia.uni.fmi.mjt.twitch.content.Content;
 import bg.sofia.uni.fmi.mjt.twitch.content.Metadata;
-import bg.sofia.uni.fmi.mjt.twitch.content.stream.Stream;
 import bg.sofia.uni.fmi.mjt.twitch.user.User;
 
 import java.time.Duration;
 
-public class VideoImpl implements Video{
-    public VideoImpl(Stream stream){
+public class VideoImpl implements Video {
+    public VideoImpl(Content stream) {
         this.metadata = stream.getMetadata();
         this.numberOfViews = 0;
         this.duration = stream.getDuration();
@@ -29,7 +29,8 @@ public class VideoImpl implements Video{
     }
 
     @Override
-    public void stopWatching(User user) {}
+    public void stopWatching(User user) {
+    }
 
     @Override
     public int getNumberOfViews() {

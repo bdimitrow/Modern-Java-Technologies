@@ -7,14 +7,10 @@ import java.time.Duration;
 import java.time.LocalTime;
 
 public class StreamImpl implements Stream {
-    public StreamImpl(int numberOfViews, LocalTime startTime, Metadata metadata, User streamer) {
-        this.numberOfViews = numberOfViews;
-        this.startTime = startTime;
+    public StreamImpl(Metadata metadata) {
+        this.numberOfViews = 0;
+        this.startTime = LocalTime.now();
         this.metadata = metadata;
-        this.streamer = streamer;
-    }
-
-    public StreamImpl() {
     }
 
     @Override
@@ -30,6 +26,7 @@ public class StreamImpl implements Stream {
     @Override
     public void startWatching(User user) {
         ++numberOfViews;
+
     }
 
     @Override
