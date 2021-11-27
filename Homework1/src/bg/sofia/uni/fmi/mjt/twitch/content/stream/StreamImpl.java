@@ -5,6 +5,7 @@ import bg.sofia.uni.fmi.mjt.twitch.user.User;
 
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.Objects;
 
 public class StreamImpl implements Stream {
     public StreamImpl(Metadata metadata) {
@@ -26,7 +27,6 @@ public class StreamImpl implements Stream {
     @Override
     public void startWatching(User user) {
         ++numberOfViews;
-
     }
 
     @Override
@@ -39,9 +39,20 @@ public class StreamImpl implements Stream {
         return numberOfViews;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StreamImpl stream = (StreamImpl) o;
+        return numberOfViews == stream.numberOfViews && Objects.equals(metadata, stream.metadata);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(numberOfViews, metadata);
+    }
+
     private int numberOfViews;
     private LocalTime startTime;
     private Metadata metadata;
-    private User streamer;
-
 }

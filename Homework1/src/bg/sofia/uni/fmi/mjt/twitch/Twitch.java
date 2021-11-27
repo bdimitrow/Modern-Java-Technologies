@@ -31,7 +31,7 @@ public class Twitch implements StreamingPlatform {
             throw new UserStreamingException("User is already streaming!");
         }
         // Create User an Stream
-        UserImpl streamer = new UserImpl(username, UserStatus.STREAMING);
+        User streamer = this.userService.getUsers().get(username);
         Stream newStream = new StreamImpl(new Metadata(title, category, streamer));
         // Add the user to the platform, if he does not exist there.
         var allUsers = this.contentsOfUser.keySet();
@@ -43,6 +43,7 @@ public class Twitch implements StreamingPlatform {
         contentsOfStreamer.add(newStream);
         contentsOfUser.put(streamer, contentsOfStreamer);
 
+        streamer.setStatus(UserStatus.STREAMING);
         return newStream;
     }
 
@@ -58,7 +59,7 @@ public class Twitch implements StreamingPlatform {
             throw new UserStreamingException("User is not streaming!");
         }
         // Find the user by username
-        User searchedUser = getUser(username);
+        User searchedUser = this.userService.getUsers().get(username);
         // Get the stream that will be stopped
         var contentOfSearchedUser = this.contentsOfUser.get(searchedUser);
         Content toBeStopped = null;
@@ -76,6 +77,7 @@ public class Twitch implements StreamingPlatform {
         contentOfSearchedUser.remove(toBeStopped);
         contentOfSearchedUser.add(newVideo);
 
+        searchedUser.setStatus(UserStatus.OFFLINE);
         return newVideo;
     }
 
@@ -91,7 +93,7 @@ public class Twitch implements StreamingPlatform {
             throw new UserStreamingException("User is currently streaming!");
         }
 
-        User watcher = getUser(username);
+        User watcher = this.userService.getUsers().get(username);
         content.startWatching(watcher);
 
         addContentToWatched(content, watcher);
@@ -138,7 +140,19 @@ public class Twitch implements StreamingPlatform {
 
     @Override
     public Content getMostWatchedContentFrom(String username) throws UserNotFoundException {
-        return null;
+        User searchedUser = this.userService.getUsers().get(username);
+        var watchedFromUser = this.watchedContentOfUser.get(searchedUser);
+        var contents = watchedFromUser.keySet();
+        int maxViews = 0;
+        Content mostWatchedContent = null;
+        for(var currentContent : contents){
+            if(watchedFromUser.get(currentContent) > maxViews){
+                mostWatchedContent = currentContent;
+                maxViews = watchedFromUser.get(currentContent);
+            }
+        }
+
+        return mostWatchedContent;
     }
 
     @Override
@@ -149,6 +163,10 @@ public class Twitch implements StreamingPlatform {
     private UserService userService;
     private HashMap<User, List<Content>> contentsOfUser;
     private HashMap<User, HashMap<Content, Integer>> watchedContentOfUser;
+
+    public HashMap<User, List<Content>> getContentsOfUser() {
+        return contentsOfUser;
+    }
 
     private User getUser(String username) {
         var allUsers = this.contentsOfUser.keySet();
