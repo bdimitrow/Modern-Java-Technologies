@@ -13,10 +13,18 @@ import bg.sofia.uni.fmi.mjt.twitch.user.UserStatus;
 import bg.sofia.uni.fmi.mjt.twitch.user.UserStreamingException;
 import bg.sofia.uni.fmi.mjt.twitch.user.service.UserService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 
 public class Twitch implements StreamingPlatform {
-    public final List<Category> CATEGORIES = List.of(Category.GAMES, Category.IRL, Category.MUSIC, Category.ESPORTS);
+    public final static List<Category> CATEGORIES = List.of(Category.GAMES, Category.IRL, Category.MUSIC, Category.ESPORTS);
 
     public Twitch(UserService userService) {
         this.userService = userService;
@@ -27,46 +35,48 @@ public class Twitch implements StreamingPlatform {
     @Override
     public Stream startStream(String username, String title, Category category)
             throws UserNotFoundException, UserStreamingException {
-        if (username == null || title == null || category == null || username.isEmpty() || title.isEmpty()) {
-            throw new IllegalArgumentException();
+        validateUsername(username);
+        if (title == null || title.isEmpty()) {
+            throw new IllegalArgumentException("Illegal title.");
         }
-        if (this.userService.getUsers().get(username) == null) {
-            throw new UserNotFoundException("User could not be found in the service.");
+        if (category == null) {
+            throw new IllegalArgumentException("Category can not be null.");
         }
         if (this.userService.getUsers().get(username).getStatus() == UserStatus.STREAMING) {
             throw new UserStreamingException("User is already streaming!");
         }
-        // Create User an Stream
+
+        // Get User and create Stream
         User streamer = this.userService.getUsers().get(username);
         Stream newStream = new StreamImpl(new Metadata(title, category, streamer));
-        // Add the user to the platform, if he does not exist there.
+        // Add the user to the HashMap 'contentsOfUser', if he does not exist there.
         var allUsers = this.contentsOfUser.keySet();
         if (!allUsers.contains(streamer)) {
             this.contentsOfUser.put(streamer, new ArrayList<>());
         }
         // Get all the content of the user and add the stream to it.
-        var contentsOfStreamer = this.contentsOfUser.get(streamer);
-        contentsOfStreamer.add(newStream);
-        contentsOfUser.put(streamer, contentsOfStreamer);
-
+        var contentsOfCurrentStreamer = this.contentsOfUser.get(streamer);
+        contentsOfCurrentStreamer.add(newStream);
+        contentsOfUser.put(streamer, contentsOfCurrentStreamer);
+        // Set the status of the user to STREAMING
         streamer.setStatus(UserStatus.STREAMING);
+
         return newStream;
     }
 
     @Override
     public Video endStream(String username, Stream stream) throws UserNotFoundException, UserStreamingException {
-        if (username == null || stream == null || username.isEmpty()) {
-            throw new IllegalArgumentException("Invalid arguments are passed.");
-        }
-        if (this.userService.getUsers().get(username) == null) {
-            throw new UserNotFoundException("User could not be found in the service.");
+        validateUsername(username);
+        if (stream == null) {
+            throw new IllegalArgumentException("Stream can not be null.");
         }
         if (this.userService.getUsers().get(username).getStatus() != UserStatus.STREAMING) {
             throw new UserStreamingException("User is not streaming!");
         }
+
         // Find the user by username
         User searchedUser = this.userService.getUsers().get(username);
-        // Get the stream that will be stopped
+        // Find the stream that will be stopped
         var contentOfSearchedUser = this.contentsOfUser.get(searchedUser);
         Content toBeStopped = null;
         for (Content current : contentOfSearchedUser) {
@@ -82,24 +92,23 @@ public class Twitch implements StreamingPlatform {
         Video newVideo = new VideoImpl(toBeStopped);
         contentOfSearchedUser.remove(toBeStopped);
         contentOfSearchedUser.add(newVideo);
-
+        // Set the status of the user to OFFLINE
         searchedUser.setStatus(UserStatus.OFFLINE);
         return newVideo;
     }
 
     @Override
     public void watch(String username, Content content) throws UserNotFoundException, UserStreamingException {
-        if (username == null || content == null || username.isEmpty()) {
-            throw new IllegalArgumentException();
-        }
-        if (this.userService.getUsers().get(username) == null) {
-            throw new UserNotFoundException("User could not be found in service.");
+        validateUsername(username);
+        if (content == null) {
+            throw new IllegalArgumentException("Content can not be null.");
         }
         if (this.userService.getUsers().get(username).getStatus() == UserStatus.STREAMING) {
             throw new UserStreamingException("User is currently streaming!");
         }
-
+        // Find the user by username
         User watcher = this.userService.getUsers().get(username);
+        // Increment numberOfWatches for the content
         content.startWatching(watcher);
 
         addContentToWatched(content, watcher);
@@ -127,7 +136,6 @@ public class Twitch implements StreamingPlatform {
 
     @Override
     public Content getMostWatchedContent() {
-        int viewersOfCurrentContent = 0;
         int maxViewersForContent = 0;
         Content mostWatchedContent = null;
         var allUsers = contentsOfUser.keySet();
@@ -146,15 +154,12 @@ public class Twitch implements StreamingPlatform {
 
     @Override
     public Content getMostWatchedContentFrom(String username) throws UserNotFoundException {
-        if (username == null || username.isEmpty()) {
-            throw new IllegalArgumentException("Username can not be null or empty");
-        }
-        if (this.userService.getUsers().get(username) == null) {
-            throw new UserNotFoundException("User could not be found in service.");
-        }
+        validateUsername(username);
         User searchedUser = this.userService.getUsers().get(username);
+        // Get all the contents that this user have watched
         var watchedFromUser = this.watchedContentOfUser.get(searchedUser);
         var contents = watchedFromUser.keySet();
+        // Find the most watched Content
         int maxViews = 0;
         Content mostWatchedContent = null;
         for (var currentContent : contents) {
@@ -169,25 +174,20 @@ public class Twitch implements StreamingPlatform {
 
     @Override
     public List<Category> getMostWatchedCategoriesBy(String username) throws UserNotFoundException {
-        if (username == null || username.isEmpty()) {
-            throw new IllegalArgumentException("Username can not be null or empty");
-        }
-        if (this.userService.getUsers().get(username) == null) {
-            throw new UserNotFoundException("User could not be found in service.");
-        }
+        validateUsername(username);
         User searchedUser = this.userService.getUsers().get(username);
-        HashMap<Category, Integer> timesWatchedCategory = new HashMap<>();
         var watchedFromUser = this.watchedContentOfUser.get(searchedUser);
+        // Create HashMap to store every category and number of times it has been watched
+        HashMap<Category, Integer> timesWatchedCategory = new HashMap<>();
         for (Category currentCategory : CATEGORIES) {
             if (numberByCategory(watchedFromUser, currentCategory) > 0) {
                 timesWatchedCategory.put(currentCategory, numberByCategory(watchedFromUser, currentCategory));
             }
         }
-        var sortedByWatches = sortByValue(timesWatchedCategory);
-
+        var sortedByNumberWatches = sortByValue(timesWatchedCategory);
+        // Extract the categories
         List<Category> result = new ArrayList<>();
-
-        for (Map.Entry<Category, Integer> current : sortedByWatches.entrySet()) {
+        for (Map.Entry<Category, Integer> current : sortedByNumberWatches.entrySet()) {
             result.add(current.getKey());
         }
 
@@ -202,14 +202,13 @@ public class Twitch implements StreamingPlatform {
         return contentsOfUser;
     }
 
-    private User getUser(String username) {
-        var allUsers = this.contentsOfUser.keySet();
-        for (User current : allUsers) {
-            if (current.getName().equals(username)) {
-                return current;
-            }
+    private void validateUsername(String username) {
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username can not be null or empty");
         }
-        return null;
+        if (this.userService.getUsers().get(username) == null) {
+            throw new UserNotFoundException("User could not be found in service.");
+        }
     }
 
     private void addContentToWatched(Content content, User user) {
@@ -217,7 +216,6 @@ public class Twitch implements StreamingPlatform {
             watchedContentOfUser.put(user, new HashMap<>());
         }
         var watchedByUser = watchedContentOfUser.get(user);
-
         if (!watchedByUser.containsKey(content)) {
             watchedByUser.put(content, 1);
             return;
