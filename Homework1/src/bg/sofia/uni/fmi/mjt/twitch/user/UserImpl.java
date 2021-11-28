@@ -4,8 +4,8 @@ import bg.sofia.uni.fmi.mjt.twitch.content.Content;
 
 import java.util.Set;
 
-public class UserImpl implements User{
-    public UserImpl(String username, UserStatus status){
+public class UserImpl implements User {
+    public UserImpl(String username, UserStatus status) {
         this.username = username;
         this.status = status;
     }

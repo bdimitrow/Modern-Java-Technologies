@@ -25,7 +25,8 @@ public interface StreamingPlatform {
      * @throws UserStreamingException   if a user with this username is currently
      *                                  streaming
      */
-    Stream startStream(String username, String title, Category category) throws UserNotFoundException, UserStreamingException;
+    Stream startStream(String username, String title, Category category)
+                            throws UserNotFoundException, UserStreamingException;
 
     /**
      * Ends an existing {@link Stream} and returns a new {@link Video} which was
@@ -76,10 +77,10 @@ public interface StreamingPlatform {
      * views in the service.
      *
      * @return the {@link Content} from user with name username which has the most
-     *         views in the service.
+     * views in the service.
      * @throws IllegalArgumentException if {@code username} is null or empty
-     * @throws UserNotFoundException if a user with this username is not found in
-     *                               the service
+     * @throws UserNotFoundException    if a user with this username is not found in
+     *                                  the service
      */
     Content getMostWatchedContentFrom(String username) throws UserNotFoundException;
 
@@ -89,10 +90,10 @@ public interface StreamingPlatform {
      *
      * @param username
      * @return an immutable copy of a sorted list of the watched categories by user
-     *         with name username in descending order of the count
+     * with name username in descending order of the count
      * @throws IllegalArgumentException if {@code username} is null or empty
-     * @throws UserNotFoundException if a user with this username is not found in
-     *                               the service
+     * @throws UserNotFoundException    if a user with this username is not found in
+     *                                  the service
      */
     List<Category> getMostWatchedCategoriesBy(String username) throws UserNotFoundException;
 

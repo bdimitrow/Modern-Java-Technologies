@@ -7,12 +7,17 @@ import bg.sofia.uni.fmi.mjt.twitch.content.stream.Stream;
 import bg.sofia.uni.fmi.mjt.twitch.content.stream.StreamImpl;
 import bg.sofia.uni.fmi.mjt.twitch.content.video.Video;
 import bg.sofia.uni.fmi.mjt.twitch.content.video.VideoImpl;
-import bg.sofia.uni.fmi.mjt.twitch.user.*;
+import bg.sofia.uni.fmi.mjt.twitch.user.User;
+import bg.sofia.uni.fmi.mjt.twitch.user.UserNotFoundException;
+import bg.sofia.uni.fmi.mjt.twitch.user.UserStatus;
+import bg.sofia.uni.fmi.mjt.twitch.user.UserStreamingException;
 import bg.sofia.uni.fmi.mjt.twitch.user.service.UserService;
 
 import java.util.*;
 
 public class Twitch implements StreamingPlatform {
+    public final List<Category> CATEGORIES = List.of(Category.GAMES, Category.IRL, Category.MUSIC, Category.ESPORTS);
+
     public Twitch(UserService userService) {
         this.userService = userService;
         this.contentsOfUser = new HashMap<>();
@@ -20,7 +25,8 @@ public class Twitch implements StreamingPlatform {
     }
 
     @Override
-    public Stream startStream(String username, String title, Category category) throws UserNotFoundException, UserStreamingException {
+    public Stream startStream(String username, String title, Category category)
+            throws UserNotFoundException, UserStreamingException {
         if (username == null || title == null || category == null || username.isEmpty() || title.isEmpty()) {
             throw new IllegalArgumentException();
         }
@@ -140,13 +146,19 @@ public class Twitch implements StreamingPlatform {
 
     @Override
     public Content getMostWatchedContentFrom(String username) throws UserNotFoundException {
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username can not be null or empty");
+        }
+        if (this.userService.getUsers().get(username) == null) {
+            throw new UserNotFoundException("User could not be found in service.");
+        }
         User searchedUser = this.userService.getUsers().get(username);
         var watchedFromUser = this.watchedContentOfUser.get(searchedUser);
         var contents = watchedFromUser.keySet();
         int maxViews = 0;
         Content mostWatchedContent = null;
-        for(var currentContent : contents){
-            if(watchedFromUser.get(currentContent) > maxViews){
+        for (var currentContent : contents) {
+            if (watchedFromUser.get(currentContent) > maxViews) {
                 mostWatchedContent = currentContent;
                 maxViews = watchedFromUser.get(currentContent);
             }
@@ -157,7 +169,29 @@ public class Twitch implements StreamingPlatform {
 
     @Override
     public List<Category> getMostWatchedCategoriesBy(String username) throws UserNotFoundException {
-        return null;
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username can not be null or empty");
+        }
+        if (this.userService.getUsers().get(username) == null) {
+            throw new UserNotFoundException("User could not be found in service.");
+        }
+        User searchedUser = this.userService.getUsers().get(username);
+        HashMap<Category, Integer> timesWatchedCategory = new HashMap<>();
+        var watchedFromUser = this.watchedContentOfUser.get(searchedUser);
+        for (Category currentCategory : CATEGORIES) {
+            if (numberByCategory(watchedFromUser, currentCategory) > 0) {
+                timesWatchedCategory.put(currentCategory, numberByCategory(watchedFromUser, currentCategory));
+            }
+        }
+        var sortedByWatches = sortByValue(timesWatchedCategory);
+
+        List<Category> result = new ArrayList<>();
+
+        for (Map.Entry<Category, Integer> current : sortedByWatches.entrySet()) {
+            result.add(current.getKey());
+        }
+
+        return List.copyOf(result);
     }
 
     private UserService userService;
@@ -183,13 +217,47 @@ public class Twitch implements StreamingPlatform {
             watchedContentOfUser.put(user, new HashMap<>());
         }
         var watchedByUser = watchedContentOfUser.get(user);
+
         if (!watchedByUser.containsKey(content)) {
             watchedByUser.put(content, 1);
             return;
         }
+
         int timesListened = watchedByUser.get(content);
         watchedByUser.put(content, timesListened + 1);
-        return;
+    }
+
+    private int numberByCategory(HashMap<Content, Integer> watched, Category category) {
+        int result = 0;
+        var contents = watched.keySet();
+
+        for (var current : contents) {
+            if (current.getMetadata().category().equals(category)) {
+                result += watched.get(current);
+            }
+        }
+
+        return result;
+    }
+
+    public static HashMap<Category, Integer> sortByValue(HashMap<Category, Integer> hm) {
+        // Create a list from elements of HashMap
+        List<Map.Entry<Category, Integer>> list = new LinkedList<>(hm.entrySet());
+
+        // Sort the list
+        Collections.sort(list, new Comparator<>() {
+            public int compare(Map.Entry<Category, Integer> o1,
+                               Map.Entry<Category, Integer> o2) {
+                return (o1.getValue()).compareTo(o2.getValue());
+            }
+        });
+
+        // put data from sorted list to hashmap
+        HashMap<Category, Integer> temp = new LinkedHashMap<Category, Integer>();
+        for (Map.Entry<Category, Integer> aa : list) {
+            temp.put(aa.getKey(), aa.getValue());
+        }
+        return temp;
     }
 
 }

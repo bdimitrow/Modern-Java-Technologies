@@ -28,28 +28,28 @@ public class ApplicationMain {
         UserService userService = new UserServiceImpl(users);
 
         Twitch twitch = new Twitch(userService);
-        twitch.startStream("firstUser","stream1", Category.GAMES);
+        twitch.startStream("firstUser", "stream1", Category.GAMES);
 
         System.out.println(firstUser.getStatus());
         System.out.println(secondUser.getStatus());
         var contents = twitch.getContentsOfUser();
         var u = contents.keySet();
-        for(var curr : u){
+        for (var curr : u) {
             var list = contents.get(curr);
-            for(var listElem : list){
+            for (var listElem : list) {
                 System.out.println("User: " + curr.getName() + " Content: " + listElem.getMetadata().title());
             }
         }
         sleep(455);
-        twitch.endStream("firstUser", new StreamImpl(new Metadata("stream1",Category.GAMES,firstUser)));
+        twitch.endStream("firstUser", new StreamImpl(new Metadata("stream1", Category.GAMES, firstUser)));
 
-        twitch.watch("secondUser",new VideoImpl(new StreamImpl(new Metadata("stream1",Category.GAMES,firstUser))));
+        twitch.watch("secondUser", new VideoImpl(new StreamImpl(new Metadata("stream1", Category.GAMES, firstUser))));
 
         contents = twitch.getContentsOfUser();
         u = contents.keySet();
-        for(var curr : u){
+        for (var curr : u) {
             var list = contents.get(curr);
-            for(var listElem : list){
+            for (var listElem : list) {
                 System.out.println("User: " + curr.getName() + " Content: " + listElem.getNumberOfViews());
             }
         }
