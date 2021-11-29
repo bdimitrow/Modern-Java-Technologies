@@ -22,9 +22,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-
 public class Twitch implements StreamingPlatform {
-    public final static List<Category> CATEGORIES = List.of(Category.GAMES, Category.IRL, Category.MUSIC, Category.ESPORTS);
+    public final static List<Category> CATEGORIES = List.of(
+            Category.GAMES,
+            Category.IRL,
+            Category.MUSIC,
+            Category.ESPORTS);
 
     public Twitch(UserService userService) {
         this.userService = userService;
@@ -158,14 +161,13 @@ public class Twitch implements StreamingPlatform {
         User searchedUser = this.userService.getUsers().get(username);
         // Get all the contents that this user have watched
         var watchedFromUser = this.watchedContentOfUser.get(searchedUser);
-        var contents = watchedFromUser.keySet();
         // Find the most watched Content
         int maxViews = 0;
         Content mostWatchedContent = null;
-        for (var currentContent : contents) {
-            if (watchedFromUser.get(currentContent) > maxViews) {
-                mostWatchedContent = currentContent;
-                maxViews = watchedFromUser.get(currentContent);
+        for (HashMap.Entry<Content, Integer> set : watchedFromUser.entrySet()) {
+            if (set.getValue() > maxViews) {
+                mostWatchedContent = set.getKey();
+                maxViews = set.getValue();
             }
         }
 
@@ -194,7 +196,7 @@ public class Twitch implements StreamingPlatform {
         return List.copyOf(result);
     }
 
-    private UserService userService;
+    private final UserService userService;
     private HashMap<User, List<Content>> contentsOfUser;
     private HashMap<User, HashMap<Content, Integer>> watchedContentOfUser;
 
@@ -216,22 +218,24 @@ public class Twitch implements StreamingPlatform {
             watchedContentOfUser.put(user, new HashMap<>());
         }
         var watchedByUser = watchedContentOfUser.get(user);
-        if (!watchedByUser.containsKey(content)) {
-            watchedByUser.put(content, 1);
-            return;
+        for (HashMap.Entry<Content, Integer> current : watchedByUser.entrySet()) {
+            if (current.getKey().equals(content)) {
+                watchedByUser.remove(content);
+                watchedByUser.put(content, current.getValue() + 1);
+                return;
+            }
         }
 
-        int timesListened = watchedByUser.get(content);
-        watchedByUser.put(content, timesListened + 1);
+        watchedByUser.put(content, 1);
     }
 
     private int numberByCategory(HashMap<Content, Integer> watched, Category category) {
         int result = 0;
         var contents = watched.keySet();
 
-        for (var current : contents) {
-            if (current.getMetadata().category().equals(category)) {
-                result += watched.get(current);
+        for (HashMap.Entry<Content, Integer> current : watched.entrySet()) {
+            if (current.getKey().getMetadata().category().equals(category)) {
+                result += current.getValue();
             }
         }
 
@@ -246,16 +250,16 @@ public class Twitch implements StreamingPlatform {
         Collections.sort(list, new Comparator<>() {
             public int compare(Map.Entry<Category, Integer> o1,
                                Map.Entry<Category, Integer> o2) {
-                return (o1.getValue()).compareTo(o2.getValue());
+                return (o2.getValue()).compareTo(o1.getValue());
             }
         });
 
         // put data from sorted list to hashmap
-        HashMap<Category, Integer> temp = new LinkedHashMap<Category, Integer>();
-        for (Map.Entry<Category, Integer> aa : list) {
-            temp.put(aa.getKey(), aa.getValue());
+        HashMap<Category, Integer> result = new LinkedHashMap<>();
+        for (Map.Entry<Category, Integer> current : list) {
+            result.put(current.getKey(), current.getValue());
         }
-        return temp;
+        return result;
     }
 
 }
