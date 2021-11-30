@@ -97,6 +97,7 @@ public class Twitch implements StreamingPlatform {
         contentOfSearchedUser.add(newVideo);
         // Set the status of the user to OFFLINE
         searchedUser.setStatus(UserStatus.OFFLINE);
+
         return newVideo;
     }
 

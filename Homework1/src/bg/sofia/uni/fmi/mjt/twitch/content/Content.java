@@ -1,8 +1,8 @@
 package bg.sofia.uni.fmi.mjt.twitch.content;
 
-import java.time.Duration;
-
 import bg.sofia.uni.fmi.mjt.twitch.user.User;
+
+import java.time.Duration;
 
 public interface Content {
 
