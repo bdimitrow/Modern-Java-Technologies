@@ -29,7 +29,7 @@ public class LeastRecentlyUsedCache<K, V> extends CacheBase<K, V> {
         return this.cache.values();
     }
 
-    protected V getFromCache(K k) {
+    protected V  getFromCache(K k) {
         return cache.get(k);
     }
 
@@ -42,10 +42,8 @@ public class LeastRecentlyUsedCache<K, V> extends CacheBase<K, V> {
     }
 
     protected void evictFromCache() {
-        var it = cache.keySet().iterator();
-        if (it.hasNext()) {
-            it.remove();
-        }
+        var it = cache.keySet().iterator().next();
+        cache.remove(it);
     }
 
 }

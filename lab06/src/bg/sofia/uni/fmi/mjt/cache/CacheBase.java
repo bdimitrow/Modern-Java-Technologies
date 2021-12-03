@@ -44,7 +44,7 @@ public abstract class CacheBase<K, V> implements Cache<K, V> {
         return returnValue;
     }
 
-    private void addToCache(K key, V value) {
+    protected void addToCache(K key, V value) {
         if (size() == capacity && !this.containsKey(key)) {
             evictFromCache();
         }
