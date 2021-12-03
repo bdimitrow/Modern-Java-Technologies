@@ -59,12 +59,12 @@ public class ApplicationMain {
         twitch.watch("secondUser", video3);
         twitch.watch("secondUser", video3);
         twitch.watch("secondUser", video2);
-//        twitch.watch("thirdUser", video3);
-//        twitch.watch("thirdUser", video3);
-//        twitch.watch("thirdUser", video3);
-//        twitch.watch("thirdUser", video3);
-//        twitch.watch("thirdUser", video2);
-//        twitch.watch("thirdUser", video2);
+        twitch.watch("thirdUser", video);
+        twitch.watch("thirdUser", video);
+        twitch.watch("thirdUser", video);
+        twitch.watch("thirdUser", video);
+        twitch.watch("thirdUser", video2);
+        twitch.watch("thirdUser", video2);
 
 //        contents = twitch.getContentsOfUser();
 //        u = contents.keySet();
@@ -75,8 +75,8 @@ public class ApplicationMain {
 //            }
 //        }
 //        System.out.println(twitch.getMostWatchedStreamer().getName());
-//        System.out.println(twitch.getMostWatchedContent().getMetadata().title());
-        System.out.println("dadad: " + twitch.getMostWatchedContentFrom("secondUser").getMetadata().title());
+        System.out.println(twitch.getMostWatchedContent().getMetadata().title());
+//        System.out.println("dadad: " + twitch.getMostWatchedContentFrom("secondUser").getMetadata().title());
 
 //        List<Category> categoryList = twitch.getMostWatchedCategoriesBy("secondUser");
 //        for (var a : categoryList) {

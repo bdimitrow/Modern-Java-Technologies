@@ -232,7 +232,6 @@ public class Twitch implements StreamingPlatform {
 
     private int numberByCategory(HashMap<Content, Integer> watched, Category category) {
         int result = 0;
-        var contents = watched.keySet();
 
         for (HashMap.Entry<Content, Integer> current : watched.entrySet()) {
             if (current.getKey().getMetadata().category().equals(category)) {
