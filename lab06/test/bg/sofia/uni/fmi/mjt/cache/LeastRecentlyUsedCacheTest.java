@@ -6,28 +6,34 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LeastRecentlyUsedCacheTest {
 
     @Mock
     private static Storage<Integer, String> storage;
 
-    private static LeastRecentlyUsedCache<Integer,String> lru;
+    private static LeastRecentlyUsedCache<Integer, String> lru;
 
     @BeforeAll
-    public static void setUp(){
-        lru = new LeastRecentlyUsedCache<Integer,String>(storage,5);
+    public static void setUp() {
+        lru = new LeastRecentlyUsedCache<Integer, String>(storage, 5);
     }
 
     @AfterEach
-    public void tearDown(){
+    public void tearDown() {
         lru.clear();
     }
 
     @Test
     void size() {
-        assertEquals(lru.size(),0);
+        assertEquals(lru.size(), 0);
 
         lru.put(1, "edno");
         lru.put(2, "dve");
@@ -50,26 +56,31 @@ class LeastRecentlyUsedCacheTest {
 
     @Test
     void values() {
+        lru.put(1, "edno");
+        lru.put(2, "dve");
+        lru.put(3, "tri");
+        lru.put(4, "chetiri");
+        assertIterableEquals(lru.values(), List.of("edno", "dve", "tri", "chetiri"));
     }
 
     @Test
     void getFromCache() {
-        lru.put(1,"edno");
-        lru.put(2,"dve");
+        lru.put(1, "edno");
+        lru.put(2, "dve");
 
-        assertEquals(lru.getFromCache(2),"dve");
+        assertEquals(lru.getFromCache(2), "dve");
         assertNull(lru.getFromCache(4));
     }
 
     @Test
     void put() {
-        lru.put(1,"edno");
-        assertEquals(lru.getFromCache(1),"edno");
+        lru.put(1, "edno");
+        assertEquals(lru.getFromCache(1), "edno");
     }
 
     @Test
     void containsKey() {
-        lru.put(1,"edno");
+        lru.put(1, "edno");
         assertTrue(lru.containsKey(1));
         assertFalse(lru.containsKey(2));
     }
@@ -85,10 +96,10 @@ class LeastRecentlyUsedCacheTest {
 
     @Test
     void addToCache() {
-        CacheBase<Integer,String> cb = new LeastRecentlyUsedCache<Integer,String>(storage,2);
-        cb.addToCache(1,"edno");
-        cb.addToCache(2,"dve");
-        cb.addToCache(3,"tri");
+        CacheBase<Integer, String> cb = new LeastRecentlyUsedCache<Integer, String>(storage, 2);
+        cb.addToCache(1, "edno");
+        cb.addToCache(2, "dve");
+        cb.addToCache(3, "tri");
 
         assertFalse(cb.containsKey(1));
         assertTrue(cb.containsKey(3));

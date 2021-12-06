@@ -6,13 +6,18 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 class LeastFrequentlyUsedCacheTest<K, V> {
@@ -50,7 +55,7 @@ class LeastFrequentlyUsedCacheTest<K, V> {
         lfu.put(1, "edno");
         lfu.put(2, "dve");
         lfu.put(3, "tri");
-//        assertIterableEquals(lfu.values(), Array("edno","edve","tri"));
+        assertIterableEquals(lfu.values(), List.of("edno", "dve", "tri"));
     }
 
     @Test
@@ -97,13 +102,13 @@ class LeastFrequentlyUsedCacheTest<K, V> {
 
     @Test
     void getHitRate() throws ItemNotFound {
-        assertEquals(lfu.getHitRate(),0);
-        lfu.put(1,"edno");
-        when(storage.retrieve(3)).thenReturn("tri");
-        lfu.get(3);
-        assertEquals(lfu.getHitRate(),0);
+        assertEquals(lfu.getHitRate(), 0);
+        lfu.put(1, "edno");
+//        when(storage.retrieve(3)).thenReturn("tri");
+//        lfu.get(3);
+        assertEquals(lfu.getHitRate(), 0);
         lfu.get(1);
-        assertEquals(lfu.getHitRate(),1);
+        assertEquals(lfu.getHitRate(), 1);
     }
 
     @Test
@@ -121,15 +126,19 @@ class LeastFrequentlyUsedCacheTest<K, V> {
     }
 
     @Test
-    void testGetFromStorageNull() {
-//        when(storage.retrieve(2)).thenThrow(ItemNotFound.class);
-//        assertThrows(ItemNotFound.class, ()->lfu.get(2));
+    void testGetFromStorageNull() throws ItemNotFound {
+        Storage mockedStorage = Mockito.mock(Storage.class, Mockito.CALLS_REAL_METHODS);
+        var lfu2 = new LeastFrequentlyUsedCache<Integer, String>(mockedStorage, 3);
+        when(mockedStorage.retrieve(any())).thenReturn(null);
+        assertThrows(ItemNotFound.class, () -> lfu2.get(2));
     }
 
     @Test
-    void testGetFromStorage() {
-//    when(storage.retrieve(2)).thenReturn("dve");
-
+    void testGetFromStorage() throws ItemNotFound {
+        Storage mockedStorage = Mockito.mock(Storage.class, Mockito.CALLS_REAL_METHODS);
+        var lfu2 = new LeastFrequentlyUsedCache<Integer, String>(mockedStorage, 3);
+        when(mockedStorage.retrieve(any())).thenReturn("test");
+        assertEquals(lfu2.get(2), "test");
     }
 
 
