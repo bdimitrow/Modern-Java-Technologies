@@ -25,11 +25,11 @@ public abstract class CacheBase<K, V> implements Cache<K, V> {
             throw new IllegalArgumentException();
         }
 
-        totalHits = +1;
+        totalHits += 1;
 
         V returnValue = getFromCache(key);
         if (returnValue != null) {
-            successfulHits = +1;
+            successfulHits += 1;
             return returnValue;
         }
 

@@ -6,11 +6,12 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 
 public class LeastRecentlyUsedCache<K, V> extends CacheBase<K, V> {
+    private static final float LOAD_FACTOR = 0.75f;
     private final LinkedHashMap<K, V> cache;
 
     public LeastRecentlyUsedCache(Storage<K, V> storage, int capacity) {
         super(storage, capacity);
-        this.cache = new LinkedHashMap<>(capacity, 0.75f, true);
+        this.cache = new LinkedHashMap<>(capacity, LOAD_FACTOR, true);
     }
 
     @Override
@@ -29,7 +30,7 @@ public class LeastRecentlyUsedCache<K, V> extends CacheBase<K, V> {
         return this.cache.values();
     }
 
-    protected V  getFromCache(K k) {
+    protected V getFromCache(K k) {
         return cache.get(k);
     }
 
