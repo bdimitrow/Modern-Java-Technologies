@@ -38,7 +38,7 @@ public class LeastFrequentlyUsedCache<K, V> extends CacheBase<K, V> {
         if (val == null) {
             return null;
         }
-
+        keyUses.put(key, keyUses.get(key) + 1);
         return val;
     }
 
@@ -68,9 +68,10 @@ public class LeastFrequentlyUsedCache<K, V> extends CacheBase<K, V> {
 
         for (K key : keyUses.keySet()) {
             int usageCount = keyUses.get(key);
-            if (usageCount <= minUsageCount)
+            if (usageCount <= minUsageCount) {
                 toBeRemoved = key;
-            minUsageCount = usageCount;
+                minUsageCount = usageCount;
+            }
         }
 
         return toBeRemoved;
