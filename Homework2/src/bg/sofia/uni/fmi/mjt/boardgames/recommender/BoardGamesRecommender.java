@@ -83,7 +83,6 @@ public class BoardGamesRecommender implements Recommender {
                 .toList();
     }
 
-
     @Override
     public void storeGamesIndex(Writer writer) {
     }
