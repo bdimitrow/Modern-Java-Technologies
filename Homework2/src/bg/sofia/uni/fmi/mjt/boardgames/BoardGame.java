@@ -43,7 +43,7 @@ public record BoardGame(int id, String name, String description, int maxPlayers,
         ).size();
     }
 
-    private Collection<String> getDescriptionAsCollection() {
+    public Collection<String> getDescriptionAsCollection() {
         return List.of(this.description.split("[\\p{IsPunctuation}\\p{IsWhite_Space}]+"));
     }
 

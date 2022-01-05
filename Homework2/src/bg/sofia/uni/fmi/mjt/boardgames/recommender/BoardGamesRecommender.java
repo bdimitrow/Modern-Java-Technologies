@@ -1,9 +1,12 @@
 package bg.sofia.uni.fmi.mjt.boardgames.recommender;
 
 import bg.sofia.uni.fmi.mjt.boardgames.BoardGame;
+import bg.sofia.uni.fmi.mjt.boardgames.FileException;
 import bg.sofia.uni.fmi.mjt.boardgames.Utils;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -12,14 +15,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class BoardGamesRecommender implements Recommender {
     private List<BoardGame> allBoardGames = new ArrayList<>();
     private Set<String> allStopWords = new LinkedHashSet<>();
+    private Map<String, List<Integer>> index = new HashMap<>();
+
 
     /**
      * Constructs an instance using the provided file names.
@@ -29,7 +38,23 @@ public class BoardGamesRecommender implements Recommender {
      * @param stopwordsFile   the stopwords file
      */
     BoardGamesRecommender(Path datasetZipFile, String datasetFileName, Path stopwordsFile) {
+        try (FileInputStream fis = new FileInputStream(datasetZipFile.toString() + datasetFileName);
+             BufferedInputStream bis = new BufferedInputStream(fis);
+             ZipInputStream zis = new ZipInputStream(bis)) {
 
+            ZipEntry zipEntry;
+
+            List<String> content = new ArrayList<>();
+            while ((zipEntry = zis.getNextEntry()) != null) {
+                content.add(zipEntry.toString());
+            }
+            allBoardGames = content.stream()
+                    .map(BoardGame::of)
+                    .toList();
+
+        } catch (IOException e) {
+            throw new FileException("Problem occurred while processing file!", e);
+        }
     }
 
     /**
@@ -46,7 +71,7 @@ public class BoardGamesRecommender implements Recommender {
             allBoardGames = reader.lines().skip(1).map(BoardGame::of).toList();
             allStopWords = secondReader.lines().collect(Collectors.toSet());
         } catch (IOException e) {
-            throw new IllegalStateException("Problem occurred while reading the file.");
+            throw new FileException("Problem occurred while reading the file.");
         }
     }
 
@@ -87,7 +112,17 @@ public class BoardGamesRecommender implements Recommender {
 
     @Override
     public void storeGamesIndex(Writer writer) {
+        for (var game : allBoardGames) {
+            var descriptionWithoutStopwords = Utils.difference(game.getDescriptionAsCollection(), allStopWords);
+            for (var word : descriptionWithoutStopwords) {
+                if (index.containsKey(word)) {
+                    List<Integer> inGames = index.get(word);
+                    inGames.add(game.id());
+                    index.put(word, inGames);
+                } else {
+                    index.put(word, List.of(game.id()));
+                }
+            }
+        }
     }
-
-
 }
