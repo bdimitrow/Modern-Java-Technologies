@@ -3,15 +3,28 @@ package bg.sofia.uni.fmi.mjt.logger;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 public class DefaultLogger implements Logger {
-    private LoggerOptions loggerOptions;
-    private static int fileName = 0;
+    private final LoggerOptions loggerOptions;
+    private int fileName = 0;
+    private Path currentPath;
 
     public DefaultLogger(LoggerOptions logOpt) {
         this.loggerOptions = logOpt;
+        this.fileName = 0;
+        this.currentPath = Paths.get(loggerOptions.getDirectory(), "logs-" + fileName + ".txt");
+        try {
+            if (!Files.exists(currentPath)) {
+                Files.createFile(currentPath);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new LogException("Error while creating file.");
+        }
     }
 
 
@@ -24,20 +37,27 @@ public class DefaultLogger implements Logger {
             throw new LogException("Logger should throw errors.");
         }
 
-        if ((this.loggerOptions.getDirectory() + fileName).length() >= loggerOptions.getMaxFileSizeBytes()) {
-            ++fileName;
+        try {
+            if (Files.exists(this.currentPath) &&
+                    Files.size(this.currentPath) >= this.loggerOptions.getMaxFileSizeBytes()) {
+                updateLogFile();
+            }
+        } catch (IOException e) {
+            throw new LogException("Could not update log file.");
         }
-        try (OutputStream os = new FileOutputStream(this.loggerOptions.getDirectory() + "/logs-" + fileName + ".txt")) {
+
+        try (OutputStream os = new FileOutputStream(String.valueOf(this.currentPath), true)) {
             if (this.loggerOptions.getMinLogLevel().getLevel() <= level.getLevel()) {
                 String toBeWritten = "[" + level.name() + "]|" +
                         timestamp.toString() + "|" +
-                        this.loggerOptions.getClazz() + "|" +
+                        this.loggerOptions.getClazz().getPackageName() + "|" +
                         message +
                         System.lineSeparator();
 
 //                Log forWrite = new Log()
 
                 os.write(toBeWritten.getBytes());
+                os.flush();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,6 +72,11 @@ public class DefaultLogger implements Logger {
 
     @Override
     public Path getCurrentFilePath() {
-        return Path.of(this.loggerOptions.getDirectory() + "/logs-" + fileName + ".txt");
+        return currentPath;
+    }
+
+    private void updateLogFile() {
+        ++fileName;
+        this.currentPath = Paths.get(loggerOptions.getDirectory(), "logs-" + fileName + ".txt");
     }
 }

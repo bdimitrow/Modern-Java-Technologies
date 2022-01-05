@@ -8,7 +8,7 @@ public record Log(Level level, LocalDateTime timestamp, String packageName, Stri
 
     public static Log of(String line) {
         final String[] tokens = line.split("\\|");
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-MMM-YYYY");
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME; //ofPattern("yyyy-MM-dd HH:mm:ss");
         var level = tokens[0].substring(1, tokens[0].length() - 1);
         return new Log(
                 Level.valueOf(level),
