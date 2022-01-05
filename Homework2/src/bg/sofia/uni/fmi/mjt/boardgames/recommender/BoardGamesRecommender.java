@@ -79,7 +79,9 @@ public class BoardGamesRecommender implements Recommender {
 
         return allBoardGames.stream()
                 .filter(curr -> curr.differenceInWords(allStopWords, keywords) >= 1)
-                .sorted(Comparator.comparingInt((BoardGame boardGame) -> boardGame.differenceInWords(allStopWords, keywords)).reversed())
+                .sorted(Comparator.comparingInt(
+                        (BoardGame boardGame) -> boardGame.differenceInWords(allStopWords, keywords)).reversed()
+                )
                 .toList();
     }
 

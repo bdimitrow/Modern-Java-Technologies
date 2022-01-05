@@ -4,41 +4,39 @@ import bg.sofia.uni.fmi.mjt.boardgames.BoardGame;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class BoardGamesStatisticsAnalyzer implements StatisticsAnalyzer {
     private final Collection<BoardGame> boardGames;
-    private final Map<String, Integer> countByCategory = new HashMap<>();
+    private final HashMap<String, Integer> countByCategory = new HashMap<>();
     private final Map<String, Integer> totalPlayingTimeByCategory = new HashMap<>();
 
     public BoardGamesStatisticsAnalyzer(Collection<BoardGame> games) {
         this.boardGames = games;
-        setCountByCategory();
-        setTotalPlayingTimeByCategory();
+        setCountByCategory(games);
+        setTotalPlayingTimeByCategory(games);
     }
 
     @Override
     public List<String> getNMostPopularCategories(int n) {
-        if(n < 0){
+        if (n < 0) {
             throw new IllegalArgumentException("Invalid argument! The size of a list can not be negative.");
+        }
+        if (n == 0) {
+            return Collections.emptyList();
         }
 
         List<String> result = new ArrayList<>();
-
-        Map<String, Integer> sortedCountByCategories = new HashMap<>();
-        // Sort the list
-        countByCategory.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .forEachOrdered(x -> sortedCountByCategories.put(x.getKey(), x.getValue()));
-
-        while (n > 0) {
-            for (Map.Entry<String, Integer> entry : sortedCountByCategories.entrySet()) {
-                result.add(entry.getKey());
-                --n;
+        HashMap<String, Integer> sortedCountByCategories = sortByValue(countByCategory);
+        for (Map.Entry<String, Integer> entry : sortedCountByCategories.entrySet()) {
+            result.add(entry.getKey());
+            if (--n == 0) {
+                return result;
             }
         }
 
@@ -61,9 +59,10 @@ public class BoardGamesStatisticsAnalyzer implements StatisticsAnalyzer {
 
     @Override
     public double getAveragePlayingTimeByCategory(String category) {
-        if(category == null || category.isEmpty() || !countByCategory.containsKey(category)){
+        if (category == null || category.isEmpty() || !countByCategory.containsKey(category)) {
             throw new IllegalArgumentException("Invalid argument! Such a category does not exist.");
         }
+
         return (double) totalPlayingTimeByCategory.get(category) / countByCategory.get(category);
     }
 
@@ -72,18 +71,20 @@ public class BoardGamesStatisticsAnalyzer implements StatisticsAnalyzer {
         Map<String, Double> result = new HashMap<>();
         for (Map.Entry<String, Integer> entry : countByCategory.entrySet()) {
             var currentCategory = entry.getKey();
-            var averagePlayingTimeCurrentCategory = (double) totalPlayingTimeByCategory.get(currentCategory) / countByCategory.get(currentCategory);
+            var averagePlayingTimeCurrentCategory =
+                    (double) totalPlayingTimeByCategory.get(currentCategory) / countByCategory.get(currentCategory);
+
             result.put(currentCategory, averagePlayingTimeCurrentCategory);
         }
 
         return result;
     }
 
-    private void setCountByCategory() {
-        for (var game : boardGames) {
+    private void setCountByCategory(Collection<BoardGame> allBoardGames) {
+        for (var game : allBoardGames) {
             for (var category : game.categories()) {
                 if (!countByCategory.containsKey(category)) {
-                    countByCategory.putIfAbsent(category, 1);
+                    countByCategory.put(category, 1);
                 } else {
                     countByCategory.put(category, countByCategory.get(category) + 1);
                 }
@@ -91,15 +92,27 @@ public class BoardGamesStatisticsAnalyzer implements StatisticsAnalyzer {
         }
     }
 
-    private void setTotalPlayingTimeByCategory() {
-        for (var game : boardGames) {
+    private void setTotalPlayingTimeByCategory(Collection<BoardGame> allBoardGames) {
+        for (var game : allBoardGames) {
             for (var category : game.categories()) {
                 if (!totalPlayingTimeByCategory.containsKey(category)) {
-                    totalPlayingTimeByCategory.putIfAbsent(category, game.playingTimeMins());
+                    totalPlayingTimeByCategory.put(category, game.playingTimeMins());
                 } else {
-                    countByCategory.put(category, countByCategory.get(category) + game.playingTimeMins());
+                    var newTotalPlayingTime = totalPlayingTimeByCategory.get(category) + game.playingTimeMins();
+                    totalPlayingTimeByCategory.put(category, newTotalPlayingTime);
                 }
             }
         }
     }
+
+    private HashMap<String, Integer> sortByValue(HashMap<String, Integer> hm) {
+        return hm.entrySet()
+                .stream()
+                .sorted((i1, i2) -> i2.getValue().compareTo(i1.getValue()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1, LinkedHashMap::new));
+    }
+
 }
