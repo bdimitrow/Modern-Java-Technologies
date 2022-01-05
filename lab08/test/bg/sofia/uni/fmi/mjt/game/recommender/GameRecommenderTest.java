@@ -1,7 +1,5 @@
 package bg.sofia.uni.fmi.mjt.game.recommender;
 
-import bg.sofia.uni.fmi.mjt.game.recommender.model.Game;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 
 import java.io.BufferedReader;
@@ -117,14 +115,14 @@ class GameRecommenderTest {
             System.out.println(entry.getKey() + " - " + entry.getValue());
         }
 
-//        assertArrayEquals(new Stream[]{Arrays.stream(expected.keySet().toArray(new String[0])).sorted()}, new Stream[]{Arrays.stream(actual.keySet().toArray(new String[0])).sorted()});
+        assertArrayEquals(new Stream[]{Arrays.stream(expected.keySet().toArray(new String[0])).sorted()}, new Stream[]{Arrays.stream(actual.keySet().toArray(new String[0])).sorted()});
 
     }
 
     @org.junit.jupiter.api.Test
     void getYearsActive() {
-        assertEquals(gameRecommender.getYearsActive("Wii"), 3);
-        assertEquals(gameRecommender.getYearsActive("PlayStation 3"), 5);
+        assertEquals(gameRecommender.getYearsActive("Wii"), 4);
+        assertEquals(gameRecommender.getYearsActive("PlayStation 3"), 6);
         assertEquals(gameRecommender.getYearsActive("dummy"), 0);
     }
 
