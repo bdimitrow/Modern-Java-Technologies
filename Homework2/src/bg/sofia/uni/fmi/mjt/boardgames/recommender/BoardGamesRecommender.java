@@ -27,8 +27,6 @@ import java.util.zip.ZipInputStream;
 public class BoardGamesRecommender implements Recommender {
     private List<BoardGame> allBoardGames = new ArrayList<>();
     private Set<String> allStopWords = new LinkedHashSet<>();
-    private Map<String, List<Integer>> index = new HashMap<>();
-
 
     /**
      * Constructs an instance using the provided file names.
@@ -37,7 +35,7 @@ public class BoardGamesRecommender implements Recommender {
      * @param datasetFileName the name of the dataset file (inside the ZIP archive)
      * @param stopwordsFile   the stopwords file
      */
-    BoardGamesRecommender(Path datasetZipFile, String datasetFileName, Path stopwordsFile) {
+    public BoardGamesRecommender(Path datasetZipFile, String datasetFileName, Path stopwordsFile) {
         try (FileInputStream fis = new FileInputStream(datasetZipFile.toString() + datasetFileName);
              BufferedInputStream bis = new BufferedInputStream(fis);
              ZipInputStream zis = new ZipInputStream(bis)) {
@@ -63,7 +61,7 @@ public class BoardGamesRecommender implements Recommender {
      * @param dataset   Reader from which the dataset can be read
      * @param stopwords Reader from which the stopwords list can be read
      */
-    BoardGamesRecommender(Reader dataset, Reader stopwords) {
+    public BoardGamesRecommender(Reader dataset, Reader stopwords) {
         try (
                 var reader = new BufferedReader(dataset);
                 var secondReader = new BufferedReader(stopwords)
@@ -82,7 +80,7 @@ public class BoardGamesRecommender implements Recommender {
 
     @Override
     public List<BoardGame> getSimilarTo(BoardGame game, int n) {
-        if (game == null || !allBoardGames.contains(game)) {
+        if (game == null) {
             throw new IllegalArgumentException("Invalid argument! Such a game could not be found.");
         }
         if (n < 0) {
@@ -90,8 +88,8 @@ public class BoardGamesRecommender implements Recommender {
         }
 
         return allBoardGames.stream()
-                .filter(curr -> Utils.intersection(curr.categories(), game.categories()).size() >= 1)
-                .sorted(Comparator.comparing(game::calculateDistance))
+                .filter(curr -> curr.numberOfCommonCategories(game) >= 1)
+                .sorted(Comparator.comparing(game::calculateDistance).reversed())
                 .limit(n)
                 .toList();
     }
@@ -103,15 +101,27 @@ public class BoardGamesRecommender implements Recommender {
         }
 
         return allBoardGames.stream()
-                .filter(curr -> curr.differenceInWords(allStopWords, keywords) >= 1)
+                .filter(curr -> curr.numberOfCommonWords(allStopWords, keywords) >= 1)
                 .sorted(Comparator.comparingInt(
-                        (BoardGame boardGame) -> boardGame.differenceInWords(allStopWords, keywords)).reversed()
+                        (BoardGame boardGame) -> boardGame.numberOfCommonWords(allStopWords, keywords)).reversed()
                 )
                 .toList();
     }
 
     @Override
     public void storeGamesIndex(Writer writer) {
+        Map<String, List<Integer>> index = createIndexMap();
+        for (var mapEntry : index.entrySet()) {
+            try {
+                writer.write(parseMapEntry(mapEntry));
+            } catch (IOException e) {
+                throw new FileException("Error while writing to a writer.", e);
+            }
+        }
+    }
+
+    private Map<String, List<Integer>> createIndexMap() {
+        Map<String, List<Integer>> index = new HashMap<>();
         for (var game : allBoardGames) {
             var descriptionWithoutStopwords = Utils.difference(game.getDescriptionAsCollection(), allStopWords);
             for (var word : descriptionWithoutStopwords) {
@@ -120,9 +130,23 @@ public class BoardGamesRecommender implements Recommender {
                     inGames.add(game.id());
                     index.put(word, inGames);
                 } else {
-                    index.put(word, List.of(game.id()));
+                    List<Integer> newList = new ArrayList<>();
+                    newList.add(game.id());
+                    index.put(word, newList);
                 }
             }
         }
+        return index;
+    }
+
+    private String parseMapEntry(Map.Entry<String, List<Integer>> mapEntry) {
+        StringBuilder result = new StringBuilder();
+        result.append(mapEntry.getKey());
+        result.append(": ");
+        for (var id : mapEntry.getValue()) {
+            result.append(id.toString()).append(", ");
+        }
+
+        return result.toString();
     }
 }

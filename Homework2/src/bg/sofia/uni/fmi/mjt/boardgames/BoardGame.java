@@ -37,10 +37,16 @@ public record BoardGame(int id, String name, String description, int maxPlayers,
                 mechanics);
     }
 
-    public int differenceInWords(Set<String> allStopWords, String... keywords) {
-        return Utils.intersection(this.getDescriptionAsCollection().stream().map(String::toLowerCase).toList(),
+    // Calculates common words between description and keywords(stop words are excluded)
+    public int numberOfCommonWords(Set<String> allStopWords, String... keywords) {
+        return Utils.intersection(
+                this.getDescriptionAsCollection().stream().map(String::toLowerCase).toList(),
                 Utils.difference(Arrays.asList(keywords), allStopWords).stream().map(String::toLowerCase).toList()
         ).size();
+    }
+
+    public int numberOfCommonCategories(BoardGame other) {
+        return Utils.intersection(this.categories(), other.categories()).size();
     }
 
     public Collection<String> getDescriptionAsCollection() {
@@ -64,9 +70,8 @@ public record BoardGame(int id, String name, String description, int maxPlayers,
         Collection<String> otherBoardGameWords = Utils.union(other.categories, other.mechanics);
 
         Collection<String> union = Utils.union(thisBoardGameWords, otherBoardGameWords);
-        Collection<String> intersection = Utils.union(thisBoardGameWords, otherBoardGameWords);
+        Collection<String> intersection = Utils.intersection(thisBoardGameWords, otherBoardGameWords);
 
         return union.size() - intersection.size();
     }
-
 }

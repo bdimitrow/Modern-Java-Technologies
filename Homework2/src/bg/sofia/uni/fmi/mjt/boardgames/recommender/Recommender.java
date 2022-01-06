@@ -11,7 +11,7 @@ public interface Recommender {
     /**
      * @return all board games in the dataset as an unmodifiable view.
      */
-    public Collection<BoardGame> getGames();
+    Collection<BoardGame> getGames();
 
     /**
      * @param game the game we want the recommendation to be based on
@@ -37,6 +37,6 @@ public interface Recommender {
      *
      * @param writer the writer stream to output the index to
      */
-    public void storeGamesIndex(Writer writer);
+    void storeGamesIndex(Writer writer);
 
 }
