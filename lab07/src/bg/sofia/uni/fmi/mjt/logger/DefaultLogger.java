@@ -47,18 +47,17 @@ public class DefaultLogger implements Logger {
         }
 
         try (OutputStream os = new FileOutputStream(String.valueOf(this.currentPath), true)) {
-            if (this.loggerOptions.getMinLogLevel().getLevel() <= level.getLevel()) {
-                String toBeWritten = "[" + level.name() + "]|" +
-                        timestamp.toString() + "|" +
-                        this.loggerOptions.getClazz().getPackageName() + "|" +
-                        message +
-                        System.lineSeparator();
-
-//                Log forWrite = new Log()
-
-                os.write(toBeWritten.getBytes());
-                os.flush();
+            if (this.loggerOptions.getMinLogLevel().getLevel() > level.getLevel()) {
+                return;
             }
+            String toBeWritten = "[" + level.name() + "]|" +
+                    timestamp.toString() + "|" +
+                    this.loggerOptions.getClazz().getPackageName() + "|" +
+                    message +
+                    System.lineSeparator();
+
+            os.write(toBeWritten.getBytes());
+            os.flush();
         } catch (IOException e) {
             e.printStackTrace();
             throw new LogException("Operation could not be performed.");

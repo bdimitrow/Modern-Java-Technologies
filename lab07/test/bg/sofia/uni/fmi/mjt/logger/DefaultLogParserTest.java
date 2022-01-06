@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DefaultLogParserTest {
@@ -19,6 +20,14 @@ class DefaultLogParserTest {
     void setUp() throws IOException {
         logsFilePath = Path.of("logs-0.txt");
         logParser = new DefaultLogParser(logsFilePath);
+    }
+
+    @Test
+    void testInvalidArguments() {
+        assertThrows(IllegalArgumentException.class, () -> logParser.getLogs(null));
+        assertThrows(IllegalArgumentException.class, () -> logParser.getLogs(null, null));
+        assertThrows(IllegalArgumentException.class, () -> logParser.getLogsTail(-5));
+
     }
 
     @Test
@@ -42,6 +51,13 @@ class DefaultLogParserTest {
 
         assertEquals(2, result.size());
         assertTrue(result.contains(new Log(Level.INFO, LocalDateTime.of(2021, 8, 27, 1, 11, 04), "com.cryptobank.investment", "test5")));
+    }
 
+    @Test
+    void getLogsTailGreaterN() {
+        List<Log> result = logParser.getLogsTail(100);
+
+        assertEquals(9, result.size());
+        assertTrue(result.contains(new Log(Level.INFO, LocalDateTime.of(2021, 8, 27, 1, 11, 04), "com.cryptobank.investment", "test5")));
     }
 }

@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+
 class DefaultLoggerTest {
     private static final String TEST_DIR = "test_dir";
     private static DefaultLogger defaultLogger;
@@ -49,6 +50,12 @@ class DefaultLoggerTest {
     }
 
     @Test
+    void testLoggerOptionsThrow() {
+        defaultLogger.getOptions().setShouldThrowErrors(true);
+        assertThrows(LogException.class, () -> defaultLogger.log(Level.INFO, LocalDateTime.now(), "test"));
+    }
+
+    @Test
     void testLogHappyPath() {
         defaultLogger.log(Level.DEBUG, LocalDateTime.now(), "test");
 
@@ -59,28 +66,27 @@ class DefaultLoggerTest {
 
     @Test
     void testLogMoreFiles() {
-        for (int i = 0; i < 500; ++i) {
-            defaultLogger.log(Level.DEBUG, LocalDateTime.now(), "test");
+        defaultLogger.getOptions().setMinLogLevel(Level.DEBUG);
+        for (int i = 0; i < 100; ++i) {
+            defaultLogger.log(Level.DEBUG, LocalDateTime.now(), "testLogMoreFiles");
         }
 
         List<String> files = this.getContents();
 
-        assertTrue(files.size() > 1);
+//        assertTrue(files.size() > 1);
         assertTrue(files.contains("logs-0.txt"));
         assertTrue(files.contains("logs-1.txt"));
     }
 
-    private List<String> getContents()
-    {
+    private List<String> getContents() {
         List<String> contents = new ArrayList<>();
         Path path = Path.of(TEST_DIR);
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-
             for (Path file : stream) {
                 contents.add(file.getFileName().toString());
             }
         } catch (IOException | DirectoryIteratorException e) {
-            System.out.println("Error!");
+            System.out.print("Error!");
         }
 
         return contents;
