@@ -43,8 +43,8 @@ class BoardGamesRecommenderTest {
 
         assertNotNull(actual);
         assertEquals(2, actual.size());
-        assertTrue(actual.get(0).calculateDistance(forTest) >= actual.get(1).calculateDistance(forTest));
-        assertEquals("Game 7", actual.get(0).name());
+        assertTrue(actual.get(0).calculateDistance(forTest) <= actual.get(1).calculateDistance(forTest));
+        assertEquals("Game 6", actual.get(0).name());
     }
 
     @Test

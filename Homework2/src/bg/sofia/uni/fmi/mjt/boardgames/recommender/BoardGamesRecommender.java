@@ -89,7 +89,7 @@ public class BoardGamesRecommender implements Recommender {
 
         return allBoardGames.stream()
                 .filter(curr -> curr.numberOfCommonCategories(game) >= 1)
-                .sorted(Comparator.comparing(game::calculateDistance).reversed())
+                .sorted(Comparator.comparing(game::calculateDistance))
                 .limit(n)
                 .toList();
     }
