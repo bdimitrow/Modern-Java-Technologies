@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Utils {
+public class CollectionUtils {
     public static <T> Collection<T> union(Collection<T> collection1, Collection<T> collection2) {
         Set<T> set = new HashSet<T>();
 
@@ -37,5 +37,11 @@ public class Utils {
         }
 
         return result;
+    }
+
+    public static Collection<String> toLowerCase(Collection<String> input) {
+        return input.stream()
+                .map(String::toLowerCase)
+                .toList();
     }
 }

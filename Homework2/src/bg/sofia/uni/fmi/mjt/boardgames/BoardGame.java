@@ -21,7 +21,6 @@ public record BoardGame(int id, String name, String description, int maxPlayers,
     private static final int BOARDGAME_DESCRIPTION = 8;
 
 
-    // [...]
     public static BoardGame of(String line) {
         final String[] tokens = line.split(BOARDGAME_ATTRIBUTE_DELIMITER);
         var categories = Arrays.asList(tokens[BOARDGAME_CATEGORY].split(BOARDGAME_COLLECTION_DELIMITER));
@@ -39,14 +38,14 @@ public record BoardGame(int id, String name, String description, int maxPlayers,
 
     // Calculates common words between description and keywords(stop words are excluded)
     public int numberOfCommonWords(Set<String> allStopWords, String... keywords) {
-        return Utils.intersection(
-                this.getDescriptionAsCollection().stream().map(String::toLowerCase).toList(),
-                Utils.difference(Arrays.asList(keywords), allStopWords).stream().map(String::toLowerCase).toList()
+        return CollectionUtils.intersection(
+                CollectionUtils.toLowerCase(this.getDescriptionAsCollection()),
+                CollectionUtils.toLowerCase(CollectionUtils.difference(Arrays.asList(keywords), allStopWords))
         ).size();
     }
 
     public int numberOfCommonCategories(BoardGame other) {
-        return Utils.intersection(this.categories(), other.categories()).size();
+        return CollectionUtils.intersection(this.categories(), other.categories()).size();
     }
 
     public Collection<String> getDescriptionAsCollection() {
@@ -66,11 +65,11 @@ public record BoardGame(int id, String name, String description, int maxPlayers,
     }
 
     private double nonNumericDistance(BoardGame other) {
-        Collection<String> thisBoardGameWords = Utils.union(this.categories, this.mechanics);
-        Collection<String> otherBoardGameWords = Utils.union(other.categories, other.mechanics);
+        Collection<String> thisBoardGameWords = CollectionUtils.union(this.categories, this.mechanics);
+        Collection<String> otherBoardGameWords = CollectionUtils.union(other.categories, other.mechanics);
 
-        Collection<String> union = Utils.union(thisBoardGameWords, otherBoardGameWords);
-        Collection<String> intersection = Utils.intersection(thisBoardGameWords, otherBoardGameWords);
+        Collection<String> union = CollectionUtils.union(thisBoardGameWords, otherBoardGameWords);
+        Collection<String> intersection = CollectionUtils.intersection(thisBoardGameWords, otherBoardGameWords);
 
         return union.size() - intersection.size();
     }

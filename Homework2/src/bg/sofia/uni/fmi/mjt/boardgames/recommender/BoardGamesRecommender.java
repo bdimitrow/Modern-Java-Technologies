@@ -2,7 +2,7 @@ package bg.sofia.uni.fmi.mjt.boardgames.recommender;
 
 import bg.sofia.uni.fmi.mjt.boardgames.BoardGame;
 import bg.sofia.uni.fmi.mjt.boardgames.FileException;
-import bg.sofia.uni.fmi.mjt.boardgames.Utils;
+import bg.sofia.uni.fmi.mjt.boardgames.CollectionUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -88,6 +88,7 @@ public class BoardGamesRecommender implements Recommender {
         }
 
         return allBoardGames.stream()
+                .filter(curr -> !curr.equals(game))
                 .filter(curr -> curr.numberOfCommonCategories(game) >= 1)
                 .sorted(Comparator.comparing(game::calculateDistance))
                 .limit(n)
@@ -96,10 +97,6 @@ public class BoardGamesRecommender implements Recommender {
 
     @Override
     public List<BoardGame> getByDescription(String... keywords) {
-        if (keywords == null) {
-            throw new IllegalArgumentException("Invalid argument! No keywords were provided.");
-        }
-
         return allBoardGames.stream()
                 .filter(curr -> curr.numberOfCommonWords(allStopWords, keywords) >= 1)
                 .sorted(Comparator.comparingInt(
@@ -110,10 +107,15 @@ public class BoardGamesRecommender implements Recommender {
 
     @Override
     public void storeGamesIndex(Writer writer) {
-        Map<String, List<Integer>> index = createIndexMap();
-        for (var mapEntry : index.entrySet()) {
+        if (writer == null) {
+            throw new IllegalArgumentException("Invalid arguments. Writer can not be null.");
+        }
+
+        Map<String, List<Integer>> indexMap = createIndexMap();
+        for (var mapEntry : indexMap.entrySet()) {
             try {
                 writer.write(parseMapEntry(mapEntry));
+                writer.flush();
             } catch (IOException e) {
                 throw new FileException("Error while writing to a writer.", e);
             }
@@ -123,7 +125,8 @@ public class BoardGamesRecommender implements Recommender {
     private Map<String, List<Integer>> createIndexMap() {
         Map<String, List<Integer>> index = new HashMap<>();
         for (var game : allBoardGames) {
-            var descriptionWithoutStopwords = Utils.difference(game.getDescriptionAsCollection(), allStopWords);
+            var descriptionInLowerCase = CollectionUtils.toLowerCase(game.getDescriptionAsCollection());
+            var descriptionWithoutStopwords = CollectionUtils.difference(descriptionInLowerCase, allStopWords);
             for (var word : descriptionWithoutStopwords) {
                 if (index.containsKey(word)) {
                     List<Integer> inGames = index.get(word);
@@ -147,6 +150,8 @@ public class BoardGamesRecommender implements Recommender {
             result.append(id.toString()).append(", ");
         }
 
-        return result.toString();
+        String wholeString = result.toString();
+        // returns the string withouot trailing comma
+        return wholeString.substring(0, wholeString.length() - 2) + System.lineSeparator();
     }
 }
