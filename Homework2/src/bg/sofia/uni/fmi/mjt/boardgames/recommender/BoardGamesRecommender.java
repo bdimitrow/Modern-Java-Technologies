@@ -27,8 +27,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class BoardGamesRecommender implements Recommender {
-    private List<BoardGame> allBoardGames = new ArrayList<>();
-    private Set<String> allStopWords = new LinkedHashSet<>();
+    private List<BoardGame> allBoardGames;
+    private Set<String> allStopWords;
 
     /**
      * Constructs an instance using the provided file names.
@@ -42,7 +42,7 @@ public class BoardGamesRecommender implements Recommender {
             ZipFile zip = new ZipFile(datasetZipFile.toString());
             StringBuilder fileContent = new StringBuilder();
             for (Enumeration<? extends ZipEntry> e = zip.entries(); e.hasMoreElements(); ) {
-                ZipEntry entry = (ZipEntry) e.nextElement();
+                ZipEntry entry = e.nextElement();
                 if (!entry.isDirectory() && entry.getName().equals(datasetFileName)) {
                     fileContent = getTxtFiles(zip.getInputStream(entry));
                 }
@@ -54,6 +54,7 @@ public class BoardGamesRecommender implements Recommender {
             allStopWords = bufferedReader.lines().collect(Collectors.toSet());
         } catch (IOException e) {
             e.printStackTrace();
+            throw new FileException("Problem while processing files: ", e);
         }
     }
 
@@ -87,7 +88,7 @@ public class BoardGamesRecommender implements Recommender {
             allBoardGames = reader.lines().skip(1).map(BoardGame::of).toList();
             allStopWords = secondReader.lines().collect(Collectors.toSet());
         } catch (IOException e) {
-            throw new FileException("Problem occurred while reading the file.");
+            throw new FileException("Problem occurred while reading the file: ", e);
         }
     }
 
@@ -102,9 +103,8 @@ public class BoardGamesRecommender implements Recommender {
 
     @Override
     public List<BoardGame> getSimilarTo(BoardGame game, int n) {
-        if (game == null) {
-            throw new IllegalArgumentException("Invalid argument! Such a game could not be found.");
-        }
+        checkNull(game, "game");
+
         if (n < 0) {
             throw new IllegalArgumentException("Invalid argument! The size of a list can not be negative.");
         }
@@ -129,9 +129,7 @@ public class BoardGamesRecommender implements Recommender {
 
     @Override
     public void storeGamesIndex(Writer writer) {
-        if (writer == null) {
-            throw new IllegalArgumentException("Invalid arguments. Writer can not be null.");
-        }
+        checkNull(writer, "Writer");
 
         Map<String, List<Integer>> indexMap = createIndexMap();
         for (var mapEntry : indexMap.entrySet()) {
@@ -175,5 +173,11 @@ public class BoardGamesRecommender implements Recommender {
         String wholeString = result.toString();
         // returns the string withouot trailing comma
         return wholeString.substring(0, wholeString.length() - 2) + System.lineSeparator();
+    }
+
+    private void checkNull(Object o, String field) {
+        if (o == null) {
+            throw new IllegalArgumentException(String.format("%s cannot be null", field));
+        }
     }
 }

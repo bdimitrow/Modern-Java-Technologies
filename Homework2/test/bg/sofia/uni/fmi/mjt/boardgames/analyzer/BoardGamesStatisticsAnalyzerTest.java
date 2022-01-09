@@ -94,7 +94,7 @@ class BoardGamesStatisticsAnalyzerTest {
 
     @Test
     void testGetAveragePlayingTimeByCategoryNonExisting() {
-        assertThrows(IllegalArgumentException.class, () -> boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("notExistingCategory"));
+        assertEquals(0, boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("nonExisting"));
     }
 
     @Test
