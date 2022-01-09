@@ -5,6 +5,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,9 +16,12 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -33,8 +39,10 @@ class BoardGamesRecommenderTest {
 
     @Test
     void testConstructorFromZip() {
-        boardGamesRecommender = new BoardGamesRecommender(Path.of("testData.zip"), "testData.csv", Path.of("testStopwords.txt"));
+        zipFile("testData");
+        boardGamesRecommender = new BoardGamesRecommender(Path.of("testData.zip"), "testData", Path.of("testStopwords.txt"));
         List<BoardGame> allBoardGames = boardGamesRecommender.getGames().stream().toList();
+        deleteFile("testData.zip");
 
         assertEquals(9, allBoardGames.size());
         assertEquals("Die Macher", allBoardGames.get(0).name());
@@ -43,7 +51,35 @@ class BoardGamesRecommenderTest {
         assertEquals(30, boardGamesRecommender.getStopWords().size());
         assertTrue(boardGamesRecommender.getStopWords().contains("because"));
         assertFalse(boardGamesRecommender.getStopWords().contains("almond"));
+    }
 
+    private static void zipFile(String filePath) {
+        try {
+            File file = new File(filePath);
+            String zipFileName = file.getName().concat(".zip");
+
+            FileOutputStream fos = new FileOutputStream(zipFileName);
+            ZipOutputStream zos = new ZipOutputStream(fos);
+
+            zos.putNextEntry(new ZipEntry(file.getName()));
+
+            byte[] bytes = Files.readAllBytes(Paths.get(filePath));
+            zos.write(bytes, 0, bytes.length);
+            zos.closeEntry();
+            zos.close();
+        } catch (FileNotFoundException e) {
+            System.err.format("The file %s does not exist", filePath);
+        } catch (IOException e) {
+            System.err.println("I/O error: " + e);
+        }
+    }
+
+    private static void deleteFile(String filePath) {
+        try {
+            Files.delete(Path.of("testData.zip"));
+        } catch (IOException e) {
+            System.err.println("I/O error: " + e);
+        }
     }
 
     @Test
@@ -130,11 +166,11 @@ class BoardGamesRecommenderTest {
     @Test
     void testStoreGameIndex() {
         try {
-            Writer wr = new FileWriter("dummy.txt");
+            Writer wr = new FileWriter("index.txt");
             boardGamesRecommender.storeGamesIndex(wr);
             wr.close();
 
-            BufferedReader br = new BufferedReader(new FileReader("dummy.txt"));
+            BufferedReader br = new BufferedReader(new FileReader("index.txt"));
             StringBuilder fileContent = new StringBuilder();
             for (var line : br.lines().toList()) {
                 fileContent.append(line);
@@ -147,7 +183,7 @@ class BoardGamesRecommenderTest {
             assertFalse(fileContent.toString().contains("this"));
             assertFalse(fileContent.toString().contains("this"));
 
-            Files.delete(Path.of("dummy.txt"));
+            Files.delete(Path.of("index.txt"));
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("IO error while executing the test.");
