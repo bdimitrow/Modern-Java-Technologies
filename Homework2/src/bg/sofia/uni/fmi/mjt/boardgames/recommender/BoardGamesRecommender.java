@@ -26,8 +26,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class BoardGamesRecommender implements Recommender {
-    private List<BoardGame> allBoardGames;
-    private Set<String> allStopWords;
+    private final List<BoardGame> allBoardGames;
+    private final Set<String> allStopWords;
 
     /**
      * Constructs an instance using the provided file names.
@@ -170,7 +170,7 @@ public class BoardGamesRecommender implements Recommender {
         }
 
         String wholeString = result.toString();
-        // returns the string withouot trailing comma
+        // returns the string without trailing comma
         return wholeString.substring(0, wholeString.length() - 2) + System.lineSeparator();
     }
 
