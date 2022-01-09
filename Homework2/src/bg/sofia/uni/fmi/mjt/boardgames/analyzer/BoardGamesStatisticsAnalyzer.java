@@ -59,8 +59,11 @@ public class BoardGamesStatisticsAnalyzer implements StatisticsAnalyzer {
 
     @Override
     public double getAveragePlayingTimeByCategory(String category) {
-        if (category == null || category.isEmpty() || !countByCategory.containsKey(category)) {
+        if (category == null || category.isEmpty()) {
             throw new IllegalArgumentException("Invalid argument! Such a category does not exist.");
+        }
+        if(!countByCategory.containsKey(category)){
+            return 0.0;
         }
 
         return (double) totalPlayingTimeByCategory.get(category) / countByCategory.get(category);
@@ -71,10 +74,7 @@ public class BoardGamesStatisticsAnalyzer implements StatisticsAnalyzer {
         Map<String, Double> result = new HashMap<>();
         for (Map.Entry<String, Integer> entry : countByCategory.entrySet()) {
             var currentCategory = entry.getKey();
-            var averagePlayingTimeCurrentCategory =
-                    (double) totalPlayingTimeByCategory.get(currentCategory) / countByCategory.get(currentCategory);
-
-            result.put(currentCategory, averagePlayingTimeCurrentCategory);
+            result.put(currentCategory, getAveragePlayingTimeByCategory(currentCategory));
         }
 
         return result;
