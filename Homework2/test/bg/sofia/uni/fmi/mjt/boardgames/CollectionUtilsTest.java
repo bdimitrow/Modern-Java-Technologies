@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collection;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CollectionUtilsTest {
 
@@ -42,6 +42,6 @@ class CollectionUtilsTest {
         Collection<String> actual = CollectionUtils.toLowerCase(original);
         Collection<String> expected = List.of("hello", "hello", "hello", "hello", "hello");
 
-        assertEquals(expected,actual);
+        assertEquals(expected, actual);
     }
 }

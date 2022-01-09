@@ -99,16 +99,16 @@ class BoardGamesStatisticsAnalyzerTest {
 
     @Test
     void testGetAveragePlayingTimeByCategory() {
-        assertEquals(39.2,boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("category1"));
-        assertEquals(22.5,boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("category2"));
-        assertEquals(25,boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("category3"));
-        assertEquals(39,boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("category4"));
-        assertEquals(65,boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("category5"));
+        assertEquals(39.2, boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("category1"));
+        assertEquals(22.5, boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("category2"));
+        assertEquals(25, boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("category3"));
+        assertEquals(39, boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("category4"));
+        assertEquals(65, boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory("category5"));
     }
 
     @Test
     void getAveragePlayingTimeByCategory() {
-        Map<String,Double> result = boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory();
+        Map<String, Double> result = boardGamesStatisticsAnalyzer.getAveragePlayingTimeByCategory();
         assertTrue(result.containsKey("category1"));
         assertEquals(39.2, result.get("category1"));
     }

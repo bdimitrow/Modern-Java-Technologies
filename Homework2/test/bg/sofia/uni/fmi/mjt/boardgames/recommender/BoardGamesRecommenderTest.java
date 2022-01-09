@@ -32,15 +32,18 @@ class BoardGamesRecommenderTest {
     }
 
     @Test
-    void testConstructorFromZip(){
-        boardGamesRecommender = new BoardGamesRecommender(Path.of(""),"data.zip",Path.of("stopwords.txt"));
-        int n = 10;
-        for(var a : boardGamesRecommender.getGames()){
-            System.out.println(a.name());
-            if(--n == 0) {
-                break;
-            }
-        }
+    void testConstructorFromZip() {
+        boardGamesRecommender = new BoardGamesRecommender(Path.of("testData.zip"), "testData.csv", Path.of("testStopwords.txt"));
+        List<BoardGame> allBoardGames = boardGamesRecommender.getGames().stream().toList();
+
+        assertEquals(9, allBoardGames.size());
+        assertEquals("Die Macher", allBoardGames.get(0).name());
+        assertTrue(allBoardGames.contains(BoardGame.of("6;6;12;2;Mare Mediterraneum;240;Civilization,Nautical;Dice Rolling;In the ancient lands along the Mediterranean, players attempt to satisfy their unique victory conditions via trade, war and construction.  This lavishly produced game contains tons of wooden game components and a beautiful roll-out vinyl map.  Players produce a score of different commodities to trade with other cities in the hope of creating enough income to fill their capitals with buildings, produce artwork, and fill warehouses with goods...")));
+
+        assertEquals(30, boardGamesRecommender.getStopWords().size());
+        assertTrue(boardGamesRecommender.getStopWords().contains("because"));
+        assertFalse(boardGamesRecommender.getStopWords().contains("almond"));
+
     }
 
     @Test

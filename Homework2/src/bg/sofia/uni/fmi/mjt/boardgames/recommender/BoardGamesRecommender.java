@@ -1,13 +1,14 @@
 package bg.sofia.uni.fmi.mjt.boardgames.recommender;
 
 import bg.sofia.uni.fmi.mjt.boardgames.BoardGame;
-import bg.sofia.uni.fmi.mjt.boardgames.FileException;
 import bg.sofia.uni.fmi.mjt.boardgames.CollectionUtils;
+import bg.sofia.uni.fmi.mjt.boardgames.FileException;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Path;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.zip.ZipFile;
 
 public class BoardGamesRecommender implements Recommender {
     private List<BoardGame> allBoardGames = new ArrayList<>();
@@ -36,23 +38,39 @@ public class BoardGamesRecommender implements Recommender {
      * @param stopwordsFile   the stopwords file
      */
     public BoardGamesRecommender(Path datasetZipFile, String datasetFileName, Path stopwordsFile) {
-        try (FileInputStream fis = new FileInputStream(datasetZipFile.toString() + datasetFileName);
-             BufferedInputStream bis = new BufferedInputStream(fis);
-             ZipInputStream zis = new ZipInputStream(bis)) {
-
-            ZipEntry zipEntry;
-
-            List<String> content = new ArrayList<>();
-            while ((zipEntry = zis.getNextEntry()) != null) {
-                content.add(zipEntry.toString());
+        try {
+            ZipFile zip = new ZipFile(datasetZipFile.toString());
+            StringBuilder fileContent = new StringBuilder();
+            for (Enumeration<? extends ZipEntry> e = zip.entries(); e.hasMoreElements(); ) {
+                ZipEntry entry = (ZipEntry) e.nextElement();
+                if (!entry.isDirectory() && entry.getName().equals(datasetFileName)) {
+                    fileContent = getTxtFiles(zip.getInputStream(entry));
+                }
             }
-            allBoardGames = content.stream()
-                    .map(BoardGame::of)
-                    .toList();
+            List<String> stringList = List.of(fileContent.toString().split(System.lineSeparator()));
+            allBoardGames = stringList.stream().skip(1).map(BoardGame::of).toList();
 
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(stopwordsFile.toFile()));
+            allStopWords = bufferedReader.lines().collect(Collectors.toSet());
         } catch (IOException e) {
-            throw new FileException("Problem occurred while processing file!", e);
+            e.printStackTrace();
         }
+    }
+
+    private static StringBuilder getTxtFiles(InputStream in) {
+        StringBuilder out = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        String line;
+        try {
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+                out.append(System.lineSeparator());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new FileException("Problem while reading file!", e);
+        }
+        return out;
     }
 
     /**
@@ -76,6 +94,10 @@ public class BoardGamesRecommender implements Recommender {
     @Override
     public Collection<BoardGame> getGames() {
         return Collections.unmodifiableCollection(this.allBoardGames);
+    }
+
+    public Collection<String> getStopWords() {
+        return Collections.unmodifiableCollection(this.allStopWords);
     }
 
     @Override
