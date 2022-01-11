@@ -122,6 +122,13 @@ class BoardGamesRecommenderTest {
     }
 
     @Test
+    void testGetByDescriptionStopWord() {
+        List<BoardGame> actual = boardGamesRecommender.getByDescription("is");
+        assertEquals(0, actual.size());
+        assertTrue(actual.isEmpty());
+    }
+
+    @Test
     void testGetByDescriptionEmptyString() {
         List<BoardGame> actual = boardGamesRecommender.getByDescription("");
         assertEquals(0, actual.size());

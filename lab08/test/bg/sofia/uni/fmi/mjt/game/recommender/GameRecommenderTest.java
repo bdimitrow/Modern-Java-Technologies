@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GameRecommenderTest {
     private static List<Game> allGames;
@@ -152,4 +151,18 @@ class GameRecommenderTest {
         return new StringReader(Arrays.stream(games).collect(Collectors.joining(System.lineSeparator())));
     }
 
+
+
+    public static void main(String[] args){
+        foo("a", "b", "c");
+        foo(null);
+        foo();
+    }
+
+    private static void foo(String...args) {
+        if(args.length == 0){
+            System.out.println("goobye: ");
+        }
+        System.out.println("foo called, args: " + Arrays.stream((args)).toList());
+    }
 }
