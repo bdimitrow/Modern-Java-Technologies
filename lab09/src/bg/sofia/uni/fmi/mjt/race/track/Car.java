@@ -1,9 +1,10 @@
 package bg.sofia.uni.fmi.mjt.race.track;
 
 public class Car implements Runnable {
-    private int id;
+    private static final int TIME_CAR_RUNNING = 300;
+    private final int id;
     private int nPitStops;
-    private Track track;
+    private final Track track;
 
     public Car(int id, int nPitStops, Track track) {
         this.id = id;
@@ -13,7 +14,13 @@ public class Car implements Runnable {
 
     @Override
     public void run() {
-        throw new UnsupportedOperationException("Method not yet implemented");
+        try {
+            Thread.sleep(TIME_CAR_RUNNING);
+            --nPitStops;
+            getTrack().enterPit(this);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getCarId() {
