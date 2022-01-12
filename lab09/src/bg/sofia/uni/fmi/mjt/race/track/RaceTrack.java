@@ -43,26 +43,4 @@ public class RaceTrack implements Track {
     public Pit getPit() {
         return this.currentPit;
     }
-
-//    public static void main(String[] args) throws InterruptedException {
-//        RaceTrack raceTrack = new RaceTrack(3);
-//        List<Car> carList = new ArrayList<>();
-//        for (int i = 1; i <= 5; ++i) {
-//            carList.add(new Car(i, 4, raceTrack));
-//        }
-//        for (Car car : carList) {
-//            car.run();
-//        }
-//
-//        Thread.sleep(5000);
-//        raceTrack.getPit().finishRace();
-//
-//        for (Car car : carList) {
-//            System.out.println(car.getNPitStops());
-//        }
-//
-//        System.out.println(raceTrack.getPit().getPitStopsCount());
-//        System.out.println(raceTrack.getNumberOfFinishedCars());
-//
-//    }
 }

@@ -1,7 +1,7 @@
 package bg.sofia.uni.fmi.mjt.race.track;
 
 public class Car implements Runnable {
-    private static final int TIME_CAR_RUNNING = 300;
+    private static final int TIME_CAR_RUNNING = 30;
     private final int id;
     private int nPitStops;
     private final Track track;

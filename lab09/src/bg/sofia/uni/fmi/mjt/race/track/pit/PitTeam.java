@@ -3,7 +3,7 @@ package bg.sofia.uni.fmi.mjt.race.track.pit;
 import bg.sofia.uni.fmi.mjt.race.track.Car;
 
 public class PitTeam extends Thread {
-    private static final int TIME_CAR_IN_PIT = 100;
+    private static final int TIME_CAR_IN_PIT = 10;
     private final Pit pitStop;
     private int idPitTeam;
     private int totalCars;
