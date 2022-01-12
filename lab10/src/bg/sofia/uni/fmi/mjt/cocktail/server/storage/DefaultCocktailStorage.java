@@ -6,7 +6,9 @@ import bg.sofia.uni.fmi.mjt.cocktail.server.storage.exception.CocktailNotFoundEx
 
 import java.util.Collection;
 
-public class DefaultCocktailStorage implements CocktailStorage{
+public class DefaultCocktailStorage implements CocktailStorage {
+    public DefaultCocktailStorage() {
+    }
 
     @Override
     public void createCocktail(Cocktail cocktail) throws CocktailAlreadyExistsException {
