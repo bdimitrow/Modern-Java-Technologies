@@ -3,13 +3,13 @@ package bg.sofia.uni.fmi.mjt.newsfeed.dto;
 import java.util.Objects;
 
 public class News {
-    private NewsSource source;
-    private String author;
-    private String title;
-    private String description;
-    private String url;
-    private String publishedAt;
-    private String content;
+    private final NewsSource source;
+    private final String author;
+    private final String title;
+    private final String description;
+    private final String url;
+    private final String publishedAt;
+    private final String content;
 
     public News(NewsSource source, String author, String title,
                 String description, String url, String publishedAt, String content) {

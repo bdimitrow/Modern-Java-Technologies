@@ -8,16 +8,11 @@ import java.util.Objects;
 
 public class NewsFeed {
     @SerializedName("articles")
-    private List<News> news;
+    private List<News> news = new ArrayList<>();
     @SerializedName("totalResults")
     private int totalResults;
 
     public NewsFeed() {
-        news = new ArrayList<>();
-    }
-
-    public NewsFeed(List<News> news) {
-        this.news = news;
     }
 
     public List<News> getNews() {

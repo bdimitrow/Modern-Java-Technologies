@@ -3,38 +3,22 @@ package bg.sofia.uni.fmi.mjt.newsfeed;
 import java.util.Optional;
 
 public class RequestQuery {
+    private static final int PAGE_SIZE_DEFAULT_VALUE = 20;
+
     private final String keywords;
     private final String categories;
     private final String countries;
     private final int pageSize;
-    private final int page;
 
     public RequestQuery(RequestQueryBuilder builder) {
         this.keywords = builder.keywords;
         this.categories = builder.categories;
         this.countries = builder.countries;
         this.pageSize = builder.pageSize;
-        this.page = builder.page;
-    }
-
-    public String getKeywords() {
-        return keywords;
-    }
-
-    public String getCategories() {
-        return categories;
-    }
-
-    public String getCountries() {
-        return countries;
     }
 
     public int getPageSize() {
         return pageSize;
-    }
-
-    public int getPage() {
-        return page;
     }
 
     @Override
@@ -57,11 +41,9 @@ public class RequestQuery {
         private String categories;
         private String countries;
         private int pageSize;
-        private int page;
 
         public RequestQueryBuilder keywords(String... keywords) {
-            String concated = String.join("+", keywords);
-            this.keywords = concated;
+            this.keywords = String.join("+", keywords);
             return this;
         }
 
@@ -76,18 +58,12 @@ public class RequestQuery {
         }
 
         public RequestQueryBuilder pageSize(Optional<Integer> pageSize) {
-            pageSize.ifPresentOrElse(integer -> this.pageSize = integer, () -> this.pageSize = 20);
-            return this;
-        }
-
-        public RequestQueryBuilder page(int page) {
-            this.page = page;
+            pageSize.ifPresentOrElse(integer -> this.pageSize = integer, () -> this.pageSize = PAGE_SIZE_DEFAULT_VALUE);
             return this;
         }
 
         public RequestQuery build() {
-            RequestQuery query = new RequestQuery(this);
-            return query;
+            return new RequestQuery(this);
         }
     }
 }
