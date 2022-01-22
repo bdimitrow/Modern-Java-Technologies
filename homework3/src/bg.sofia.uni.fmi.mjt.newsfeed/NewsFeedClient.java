@@ -19,10 +19,10 @@ import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 public class NewsFeedClient {
     private static final String API_KEY = "f17a089db93b47de8d13c989a67fb232";
+    private static final String API_KEY_QUERY = "&apiKey=" + API_KEY;
     private static final String API_ENDPOINT_SCHEME = "https";
     private static final String API_ENDPOINT_HOST = "newsapi.org";
     private static final String API_ENDPOINT_PATH = "/v2/top-headlines";
-    private static final String API_QUERY_PAGINATION = "&";
     private static final Gson GSON = new Gson();
 
     private final HttpClient newsFeedClient;
@@ -73,6 +73,61 @@ public class NewsFeedClient {
         throw new NewsFeedClientException("Unexpected code received from service. ");
     }
 
+    public NewsFeed getNewsFeed(String[] keywords,
+                                Optional<String[]> categories,
+                                Optional<String[]> countries,
+                                Optional<Integer> pageSize) throws NewsFeedClientException {
+        if (keywords == null) {
+            throw new NewsFeedClientException("Bad arguments. ");
+        }
+        if (pageSize.isEmpty()) {
+            pageSize = Optional.of(20); // Default value for page size.
+        }
+
+        HttpResponse<String> response;
+        int totalResults = 0;
+        int currentPage = 1;
+
+        NewsFeed newsFeedResult = new NewsFeed();
+        try {
+            RequestQuery rq = new RequestQuery.RequestQueryBuilder()
+                    .keywords(keywords)
+                    .categories(categories)
+                    .countries(countries)
+                    .pageSize(pageSize)
+                    .build();
+
+            do {
+                URI uri = new URI(API_ENDPOINT_SCHEME, API_ENDPOINT_HOST, API_ENDPOINT_PATH,
+                        rq.toString() + "&page=" + currentPage + API_KEY_QUERY, null);
+                ++currentPage;
+
+                HttpRequest request = HttpRequest.newBuilder().uri(uri).build();
+                response = newsFeedClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+                NewsFeed newsFeed = GSON.fromJson(response.body(), NewsFeed.class);
+                totalResults = newsFeed.getTotalResults();
+                newsFeedResult.addNews(newsFeed);
+            } while ((currentPage - 1) * pageSize.get() < totalResults);
+        } catch (Exception e) {
+            throw new NewsFeedClientException("Error while retrieving news: " + e.getMessage(), e);
+        }
+
+        if (response.statusCode() == HTTP_OK) {
+            return newsFeedResult;
+        }
+
+        if (response.statusCode() == HTTP_BAD_REQUEST) {
+            throw new NewsFeedClientException("Bad request was sent. ");
+        }
+
+        if (response.statusCode() == HTTP_UNAUTHORIZED) {
+            throw new NewsFeedClientException("Unauthorized. Api key is missing or incorrect. ");
+        }
+        throw new NewsFeedClientException("Unexpected code received from service. ");
+    }
+
+
     String buildQuery(String[] keywords, Optional<String[]> categories, Optional<String[]> countries) {
         StringBuilder result = new StringBuilder("q=");
         for (var keyword : keywords) {
@@ -98,7 +153,7 @@ public class NewsFeedClient {
             result.deleteCharAt(result.length() - 1);
         }
 
-        result.append("&pageSize=40");
+//        result.append("&pageSize=40");
         result.append("&apiKey=" + API_KEY);
 
         return result.toString();
@@ -111,10 +166,11 @@ public class NewsFeedClient {
                 .connectTimeout(Duration.ofSeconds(20))
                 .build();
         NewsFeedClient newsFeedClient = new NewsFeedClient(client);
-        String[] keywords = {"seeks information"};
-        String[] categories = {"business"};
-        String[] countries = {"us"};
-        NewsFeed result = newsFeedClient.getNewsFeed(keywords, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        String[] keywords = {"president information"};
+        String[] categories = {"business", "health"};
+        String[] countries = {"us", "bg"};
+//        NewsFeed result = newsFeedClient.getNewsFeed(keywords, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        NewsFeed result = newsFeedClient.getNewsFeed(keywords, Optional.of(categories), Optional.of(countries), Optional.of(15));
 
         System.out.println("================");
         for (var a : result.getNews()) {

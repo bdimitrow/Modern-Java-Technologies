@@ -2,18 +2,30 @@ package bg.sofia.uni.fmi.mjt.newsfeed.dto;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class NewsFeed {
     @SerializedName("articles")
-    private News[] news;
+    private List<News> news;
+    @SerializedName("totalResults")
+    private int totalResults;
 
-    public NewsFeed(News[] news) {
+    public NewsFeed() {
+        news = new ArrayList<>();
+    }
+
+    public NewsFeed(List<News> news) {
         this.news = news;
     }
 
-    public News[] getNews() {
+    public List<News> getNews() {
         return news;
+    }
+
+    public int getTotalResults() {
+        return totalResults;
     }
 
     @Override
@@ -21,11 +33,15 @@ public class NewsFeed {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NewsFeed newsFeed = (NewsFeed) o;
-        return Arrays.equals(news, newsFeed.news);
+        return Objects.equals(news, newsFeed.news);
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(news);
+        return Objects.hash(news);
+    }
+
+    public void addNews(NewsFeed otherNews) {
+        this.news.addAll(otherNews.getNews());
     }
 }
