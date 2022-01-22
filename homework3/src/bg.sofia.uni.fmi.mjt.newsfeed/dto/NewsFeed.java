@@ -12,6 +12,10 @@ public class NewsFeed {
         this.news = news;
     }
 
+    public News[] getNews() {
+        return news;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
