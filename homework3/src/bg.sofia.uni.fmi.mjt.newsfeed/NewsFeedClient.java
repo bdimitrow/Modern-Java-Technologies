@@ -22,7 +22,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 public class NewsFeedClient {
-    private static final String API_KEY = "${key}";
+    private static final String API_KEY = System.getenv("APIKEY");
     private static final String API_KEY_QUERY = "&apiKey=" + API_KEY;
     private static final String API_ENDPOINT_SCHEME = "https";
     private static final String API_ENDPOINT_HOST = "newsapi.org";
