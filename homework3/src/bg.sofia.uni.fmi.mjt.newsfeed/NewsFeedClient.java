@@ -8,9 +8,7 @@ import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.SourcesTooManyRequestsException;
 import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.UnauthorizedException;
 import com.google.gson.Gson;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -47,8 +45,7 @@ public class NewsFeedClient {
                                 Optional<String[]> countries,
                                 Optional<Integer> pageSize)
             throws NewsFeedClientException, SourcesTooManyRequestsException,
-            ServerErrorException, UnauthorizedException, BadRequestException,
-            URISyntaxException, IOException, InterruptedException {
+            ServerErrorException, UnauthorizedException, BadRequestException {
 
         if (keywords == null) {
             throw new BadRequestException("Bad arguments. ");
