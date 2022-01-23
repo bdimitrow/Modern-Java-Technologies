@@ -5,7 +5,4 @@ public class SourcesTooManyRequestsException extends Exception {
         super(message);
     }
 
-    public SourcesTooManyRequestsException(String message, Throwable e) {
-        super(message, e);
-    }
 }

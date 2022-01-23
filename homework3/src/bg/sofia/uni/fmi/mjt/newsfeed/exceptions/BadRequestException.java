@@ -5,7 +5,4 @@ public class BadRequestException extends Exception {
         super(message);
     }
 
-    public BadRequestException(String message, Throwable e) {
-        super(message, e);
-    }
 }

@@ -5,7 +5,4 @@ public class ServerErrorException extends Exception {
         super(message);
     }
 
-    public ServerErrorException(String message, Throwable e) {
-        super(message, e);
-    }
 }

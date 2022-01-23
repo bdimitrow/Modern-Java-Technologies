@@ -5,7 +5,4 @@ public class UnauthorizedException extends Exception {
         super(message);
     }
 
-    public UnauthorizedException(String message, Throwable e) {
-        super(message, e);
-    }
 }
