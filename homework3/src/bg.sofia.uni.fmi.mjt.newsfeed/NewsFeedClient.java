@@ -1,7 +1,5 @@
 package bg.sofia.uni.fmi.mjt.newsfeed;
 
-//f17a089db93b47de8d13c989a67fb232
-
 import bg.sofia.uni.fmi.mjt.newsfeed.dto.NewsFeed;
 import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.BadRequestException;
 import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.NewsFeedClientException;
@@ -24,7 +22,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 public class NewsFeedClient {
-    private static final String API_KEY = "f17a089db93b47de8d13c989a67fb232";
+    private static final String API_KEY = "${key}";
     private static final String API_KEY_QUERY = "&apiKey=" + API_KEY;
     private static final String API_ENDPOINT_SCHEME = "https";
     private static final String API_ENDPOINT_HOST = "newsapi.org";
