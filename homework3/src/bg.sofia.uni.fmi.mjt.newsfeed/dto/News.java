@@ -23,17 +23,6 @@ public class News {
     }
 
     @Override
-    public String toString() {
-        return "News{" +
-                " author='" + author + '\'' +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", url='" + url + '\'' +
-                ", publishedAt='" + publishedAt + '\'' +
-                '}';
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

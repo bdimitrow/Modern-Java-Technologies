@@ -23,6 +23,10 @@ public class NewsFeed {
         return totalResults;
     }
 
+    public void setTotalResults(int totalResults) {
+        this.totalResults = totalResults;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

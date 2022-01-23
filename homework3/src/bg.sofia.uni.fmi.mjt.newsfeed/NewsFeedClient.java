@@ -35,15 +35,9 @@ public class NewsFeedClient {
 
 
     private final HttpClient newsFeedClient;
-    private String apiKey;
 
     public NewsFeedClient(HttpClient newsFeedClient) {
         this.newsFeedClient = newsFeedClient;
-    }
-
-    public NewsFeedClient(HttpClient newsFeedClient, String apiKey) {
-        this.newsFeedClient = newsFeedClient;
-        this.apiKey = apiKey;
     }
 
     public NewsFeed getNewsFeed(String[] keywords,
@@ -92,6 +86,7 @@ public class NewsFeedClient {
             throw new NewsFeedClientException("Error while retrieving news: " + e.getMessage(), e);
         }
 
+        newsFeedResult.setTotalResults(totalResults);
         return newsFeedResult;
     }
 
