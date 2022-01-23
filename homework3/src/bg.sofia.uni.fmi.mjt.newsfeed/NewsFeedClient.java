@@ -10,11 +10,12 @@ import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.SourcesTooManyRequestsException;
 import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.UnauthorizedException;
 import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.Optional;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
@@ -30,7 +31,7 @@ public class NewsFeedClient {
     private static final String API_ENDPOINT_PATH = "/v2/top-headlines";
     private static final Gson GSON = new Gson();
 
-    private static final int TOO_MANY_REQUESTS = 419;
+    private static final int TOO_MANY_REQUESTS_STATUS_CODE = 419;
 
 
     private final HttpClient newsFeedClient;
@@ -50,10 +51,11 @@ public class NewsFeedClient {
                                 Optional<String[]> countries,
                                 Optional<Integer> pageSize)
             throws NewsFeedClientException, SourcesTooManyRequestsException,
-            ServerErrorException, UnauthorizedException, BadRequestException {
+            ServerErrorException, UnauthorizedException, BadRequestException,
+            URISyntaxException, IOException, InterruptedException {
 
         if (keywords == null) {
-            throw new NewsFeedClientException("Bad arguments. ");
+            throw new BadRequestException("Bad arguments. ");
         }
 
         NewsFeed newsFeedResult = new NewsFeed();
@@ -75,16 +77,19 @@ public class NewsFeedClient {
                 HttpRequest request = HttpRequest.newBuilder().uri(uri).build();
                 response = newsFeedClient.send(request, HttpResponse.BodyHandlers.ofString());
 
+                if (response.statusCode() != HTTP_OK) {
+                    errorHandler(response);
+                }
+
                 NewsFeed newsFeed = GSON.fromJson(response.body(), NewsFeed.class);
                 totalResults = newsFeed.getTotalResults();
                 newsFeedResult.addNews(newsFeed);
             } while (currentPage++ * rq.getPageSize() < totalResults);
+        } catch (BadRequestException | UnauthorizedException |
+                SourcesTooManyRequestsException | ServerErrorException e) {
+            throw e;
         } catch (Exception e) {
             throw new NewsFeedClientException("Error while retrieving news: " + e.getMessage(), e);
-        }
-
-        if (response.statusCode() != HTTP_OK) {
-            errorHandler(response);
         }
 
         return newsFeedResult;
@@ -99,7 +104,7 @@ public class NewsFeedClient {
         if (response.statusCode() == HTTP_UNAUTHORIZED) {
             throw new UnauthorizedException("Your API key was missing from the request, or wasn't correct. ");
         }
-        if (response.statusCode() == TOO_MANY_REQUESTS) {
+        if (response.statusCode() == TOO_MANY_REQUESTS_STATUS_CODE) {
             throw new SourcesTooManyRequestsException("You made too many requests within a " +
                     "window of time and have been rate limited. Back off for a while.");
         }
@@ -109,25 +114,4 @@ public class NewsFeedClient {
         throw new NewsFeedClientException("Unexpected code received from service. ");
     }
 
-    public static void main(String[] args) throws NewsFeedClientException,
-            SourcesTooManyRequestsException, ServerErrorException, UnauthorizedException, BadRequestException {
-        HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .connectTimeout(Duration.ofSeconds(20))
-                .build();
-        NewsFeedClient newsFeedClient = new NewsFeedClient(client);
-        String[] keywords = {"president"};
-        String[] categories = {"business", "health"};
-        String[] countries = {"us", "bg"};
-//        NewsFeed result = newsFeedClient.getNewsFeed(keywords, Optional.empty(),
-//        Optional.empty(), Optional.empty(), Optional.empty());
-        NewsFeed result = newsFeedClient.getNewsFeed(keywords,
-                Optional.empty(), Optional.empty(), Optional.of(15));
-
-        System.out.println("================");
-        for (var a : result.getNews()) {
-            System.out.println(a.toString());
-        }
-    }
 }
