@@ -88,6 +88,14 @@ public class NewsFeedClientTest {
     }
 
     @Test
+    void testUnknownCodeError() {
+        when(httpResponseMock.statusCode()).thenReturn(9999);
+
+        assertThrows(NewsFeedClientException.class,
+                () -> client.getNewsFeed(new String[]{"test"}, Optional.empty(), Optional.empty(), Optional.of(20)));
+    }
+
+    @Test
     void testWithResults() throws NewsFeedClientException, SourcesTooManyRequestsException, UnauthorizedException, BadRequestException, ServerErrorException, URISyntaxException, IOException, InterruptedException {
         when(httpResponseMock.statusCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(httpResponseMock.body()).thenReturn(responsed);

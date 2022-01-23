@@ -32,7 +32,6 @@ public class RequestQuery {
             result.append("&country=").append(countries);
         }
 
-
         return result.append("&pageSize=").append(pageSize).toString();
     }
 

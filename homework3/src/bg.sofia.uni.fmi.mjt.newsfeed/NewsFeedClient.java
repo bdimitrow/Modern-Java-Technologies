@@ -22,6 +22,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 public class NewsFeedClient {
+    // The apiKey should be set as environment variable with name 'APIKEY='
     private static final String API_KEY = System.getenv("APIKEY");
     private static final String API_KEY_QUERY = "&apiKey=" + API_KEY;
     private static final String API_ENDPOINT_SCHEME = "https";
@@ -38,6 +39,9 @@ public class NewsFeedClient {
         this.newsFeedClient = newsFeedClient;
     }
 
+    // Firstly I understood the task a bit differently but after a short discussion with a member of the staff
+    // I understood that I have to return all the results that satisfy the query. However, the page size is optional
+    // (with 20 as default) and the number of requests depends on the number of results and the page size.
     public NewsFeed getNewsFeed(String[] keywords,
                                 Optional<String[]> categories,
                                 Optional<String[]> countries,
@@ -50,21 +54,21 @@ public class NewsFeedClient {
             throw new BadRequestException("Bad arguments. ");
         }
 
-        NewsFeed newsFeedResult = new NewsFeed();
-        RequestQuery rq = new RequestQuery.RequestQueryBuilder()
+        RequestQuery requestQuery = new RequestQuery.RequestQueryBuilder()
                 .keywords(keywords)
                 .categories(categories)
                 .countries(countries)
                 .pageSize(pageSize)
                 .build();
 
+        NewsFeed newsFeedResult = new NewsFeed();
         HttpResponse<String> response;
         int totalResults;
         int currentPage = 1;
         try {
             do {
                 URI uri = new URI(API_ENDPOINT_SCHEME, API_ENDPOINT_HOST, API_ENDPOINT_PATH,
-                        rq.toString() + "&page=" + currentPage + API_KEY_QUERY, null);
+                        requestQuery.toString() + "&page=" + currentPage + API_KEY_QUERY, null);
 
                 HttpRequest request = HttpRequest.newBuilder().uri(uri).build();
                 response = newsFeedClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -76,7 +80,7 @@ public class NewsFeedClient {
                 NewsFeed newsFeed = GSON.fromJson(response.body(), NewsFeed.class);
                 totalResults = newsFeed.getTotalResults();
                 newsFeedResult.addNews(newsFeed);
-            } while (currentPage++ * rq.getPageSize() < totalResults);
+            } while (currentPage++ * requestQuery.getPageSize() < totalResults);
         } catch (BadRequestException | UnauthorizedException |
                 SourcesTooManyRequestsException | ServerErrorException e) {
             throw e;
