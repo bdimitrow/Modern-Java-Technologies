@@ -6,6 +6,7 @@ public class Food {
     private int fdcId;
     private String description;
     private String dataType;
+    private String gtinUpc
 
     public Food(int fdcId, String description, String dataType) {
         this.fdcId = fdcId;
@@ -50,4 +51,5 @@ public class Food {
                 ", dataType='" + dataType + '\'' +
                 '}';
     }
+
 }

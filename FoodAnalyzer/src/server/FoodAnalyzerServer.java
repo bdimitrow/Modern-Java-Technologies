@@ -2,6 +2,8 @@ package server;
 
 import exceptions.BadRequestException;
 import exceptions.FoodNotFoundException;
+import server.cache.LRUCache;
+import server.dto.BrandedFood;
 import server.dto.Food;
 import server.dto.FoodList;
 import server.dto.FoodReport;
@@ -20,6 +22,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,21 +31,23 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-public class FoodAnalyzerServer implements AutoCloseable{
+public class FoodAnalyzerServer implements AutoCloseable {
 
     private static final int SERVER_PORT = 7777;
     private static final int BUFFER_SIZE = 1024;
+    private static final int DEFAULT_CACHE_SIZE = 1024;
     private static final String SERVER_HOST = "localhost";
     private static final String API_KEY = "We5UALb9buICMpssP0NRPDneFLC9pAhctVG07lPv";
     private static final String API_URL = "https://api.nal.usda.gov/fdc/v1/";
     private static boolean isStarted = true;
 
-    private final BufferedWriter writer;
     private final ServerSocketChannel serverSocketChannel;
     private final Selector selector;
     private final ByteBuffer messageBuffer;
     private final FoodHttpClient foodHttpClient;
     private Map<Integer, Food> cache;
+    private LRUCache<Food> lruCache;
+    private LRUCache<BrandedFood> brandedFoodCache;
     private boolean isCacheUpdated = false;
 
 
@@ -58,12 +63,10 @@ public class FoodAnalyzerServer implements AutoCloseable{
 
         foodHttpClient = new FoodHttpClient(HttpClient.newHttpClient());
 
-        writer = new BufferedWriter(
-                new OutputStreamWriter(
-                        new FileOutputStream(
-                                new File("resources/logFile.txt"), true)));
-
         cache = new ConcurrentHashMap<>();
+        lruCache = new LRUCache<>(DEFAULT_CACHE_SIZE);
+        brandedFoodCache = new LRUCache<>(DEFAULT_CACHE_SIZE);
+        setupLogger();
     }
 
     public FoodAnalyzerServer(int port) throws IOException {
@@ -76,12 +79,9 @@ public class FoodAnalyzerServer implements AutoCloseable{
 
         foodHttpClient = new FoodHttpClient(HttpClient.newHttpClient());
 
-        writer = new BufferedWriter(
-                new OutputStreamWriter(
-                        new FileOutputStream(
-                                new File("resources/logFile.txt"), true)));
-
         cache = new ConcurrentHashMap<>();
+        lruCache = new LRUCache<>(DEFAULT_CACHE_SIZE);
+        brandedFoodCache = new LRUCache<>(DEFAULT_CACHE_SIZE);
         setupLogger();
     }
 
@@ -123,7 +123,7 @@ public class FoodAnalyzerServer implements AutoCloseable{
             }
             //@TODO server.cache??
         } catch (IOException e) {
-            logger.log(Level.INFO,"IOException occurred: ", e);
+            logger.log(Level.INFO, "IOException occurred: ", e);
         }
     }
 
@@ -133,7 +133,7 @@ public class FoodAnalyzerServer implements AutoCloseable{
             messageBuffer.clear();
             int r = socketChannel.read(messageBuffer);
             if (r == -1) {
-                logger.log(Level.INFO,"Nothing to read. ");
+                logger.log(Level.INFO, "Nothing to read. ");
                 stopServer();
                 return;
             }
@@ -188,7 +188,9 @@ public class FoodAnalyzerServer implements AutoCloseable{
             return result.toString();
         }
         if (command.equalsIgnoreCase("get-food")) {
-            return foodHttpClient.getFoodsBySearch(commandMessage.substring(command.length() + 1)).toString();
+            FoodList result = foodHttpClient.getFoodsBySearch(commandMessage.substring(command.length() + 1));
+            cacheFoodList(result);
+            return result.toString();
         }
         if (command.equalsIgnoreCase("get-food-by-barcode")) {
             String argumentName = "--code";
@@ -203,8 +205,19 @@ public class FoodAnalyzerServer implements AutoCloseable{
         return "Unknown command!";
     }
 
+    private Food getFoodByUpcCode(String upcCode) {
+
+
+        return brandedFoodCache.getCache().forEach(f->f.getFdcId().equals(upcCode));
+    }
+
     private void cacheFood(Food food) {
         cache.put(food.getFdcId(), food);
+        lruCache.set(food);
+        if (food instanceof BrandedFood) {
+            brandedFoodCache.set((BrandedFood) food);
+        }
+
     }
 
     private void cacheFoodList(FoodList foodList) {

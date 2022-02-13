@@ -4,22 +4,10 @@ import java.util.Objects;
 import java.util.Set;
 
 public class FoodList {
-    private int currentPage;
-    private int totalPages;
     private Set<Food> foods;
 
-    public FoodList(int currentPage, int totalPages, Set<Food> foods) {
-        this.currentPage = currentPage;
-        this.totalPages = totalPages;
+    public FoodList(Set<Food> foods) {
         this.foods = foods;
-    }
-
-    public int getCurrentPage() {
-        return currentPage;
-    }
-
-    public int getTotalPages() {
-        return totalPages;
     }
 
     public Set<Food> getFoods() {
@@ -31,12 +19,12 @@ public class FoodList {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FoodList foodList = (FoodList) o;
-        return currentPage == foodList.currentPage && totalPages == foodList.totalPages && Objects.equals(foods, foodList.foods);
+        return Objects.equals(foods, foodList.foods);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(currentPage, totalPages, foods);
+        return Objects.hash(foods);
     }
 
     @Override

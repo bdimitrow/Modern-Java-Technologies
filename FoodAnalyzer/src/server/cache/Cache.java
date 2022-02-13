@@ -2,7 +2,7 @@ package server.cache;
 
 import server.dto.Food;
 
-public interface Cache<Food> {
+public interface Cache<Type> {
     boolean get(Food food);
 
     void set(Food food);
