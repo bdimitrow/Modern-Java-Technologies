@@ -32,6 +32,15 @@ public class LRUCache<Type> implements Cache<Type> {
         return true;
     }
 
+    public Food getByUpcCode(String code) {
+        for (Food f : cache) {
+            if (f.getGtinUpc().equals(code)) {
+                return f;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void set(Food foodToAdd) {
         if (cache.size() == capacity) {
@@ -44,17 +53,17 @@ public class LRUCache<Type> implements Cache<Type> {
 
     @Override
     public long size() {
-        return cache.size();
+        return this.cache.size();
     }
 
     @Override
     public void clear() {
-
+        this.cache.clear();
     }
 
     @Override
     public boolean isEmpty() {
-        return cache.isEmpty();
+        return this.cache.isEmpty();
     }
 }
 

@@ -54,6 +54,10 @@ public class FoodAnalyzerServer implements AutoCloseable {
 
     private final static Logger logger = Logger.getLogger(FoodAnalyzerServer.class.getName());
 
+    public static Logger getLogger() {
+        return logger;
+    }
+
     public FoodAnalyzerServer() throws IOException {
         messageBuffer = ByteBuffer.allocate(BUFFER_SIZE);
 
@@ -239,7 +243,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
     }
 
     private String getFoodByUpcCode(String upcCode) {
-        return lruCache.getCache().stream().filter(f -> f.getGtinUpc().equals(upcCode)).toString();
+        return lruCache.getByUpcCode(upcCode).toString();
     }
 
     private void cacheFood(Food food) {
