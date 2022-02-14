@@ -25,7 +25,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +37,7 @@ import java.util.logging.SimpleFormatter;
 public class FoodAnalyzerServer implements AutoCloseable {
 
     private static final int SERVER_PORT = 7777;
-    private static final int BUFFER_SIZE = 1024;
+    private static final int BUFFER_SIZE = 8 * 1024;
     private static final int DEFAULT_CACHE_SIZE = 1024;
     private static final String SERVER_HOST = "localhost";
     private static final String CODE_ARGUMENT = "--code";
@@ -110,7 +109,6 @@ public class FoodAnalyzerServer implements AutoCloseable {
 
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
                 Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-
                 while (keyIterator.hasNext() && isStarted) {
                     SelectionKey selectionKey = keyIterator.next();
                     if (selectionKey.isReadable()) {
@@ -141,18 +139,19 @@ public class FoodAnalyzerServer implements AutoCloseable {
             String message = new String(messageBuffer.array(), 0, messageBuffer.limit()).trim();
             String resultFromCommand = handleCommand(message);
 
-            logger.log(Level.INFO, "Message: " + message);
-            logger.log(Level.INFO, "Result: " + resultFromCommand);
+            logger.log(Level.INFO, "Message from client: " + message);
+            logger.log(Level.INFO, "Response: " + resultFromCommand);
 
-            byte[] response = (resultFromCommand + System.lineSeparator()).getBytes(StandardCharsets.UTF_8);
+            String response = resultFromCommand + System.lineSeparator();
             messageBuffer.clear();
-            messageBuffer.put(response);
+            messageBuffer.put(response.getBytes());
             messageBuffer.flip();
             socketChannel.write(messageBuffer);
         } catch (IOException e) {
+            logger.log(Level.INFO, "IOException: " + e.getMessage());
             stopServer();
         } catch (FoodNotFoundException | BadRequestException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "IOException: " + e.getMessage());
         }
     }
 
@@ -234,7 +233,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
             Result result = new MultiFormatReader().decode(bitmap);
             return result.getText();
         } catch (NotFoundException e) {
-            logger.log(Level.INFO,"No barcode was found. ");
+            logger.log(Level.INFO, "No barcode was found. ");
             return null;
         }
     }
@@ -253,7 +252,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
     }
 
     private void setupLogger() throws IOException {
-        FileHandler fileHandler = new FileHandler("resources/log.txt");
+        FileHandler fileHandler = new FileHandler("resources/log.txt", true);
         fileHandler.setFormatter(new SimpleFormatter());
         logger.addHandler(fileHandler);
         logger.setUseParentHandlers(false);

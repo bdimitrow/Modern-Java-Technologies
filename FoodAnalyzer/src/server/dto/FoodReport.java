@@ -1,21 +1,19 @@
 package server.dto;
 
-import com.google.gson.annotations.SerializedName;
-
+import java.util.List;
 import java.util.Objects;
 
 public class FoodReport {
     private final String description;
     private final String ingredients;
     private final int fdcId;
-    @SerializedName("foodNutrients")
-    private final NutrientList labelNutrients;
+    private final List<FoodNutrient> foodNutrients;
 
-    public FoodReport(String description, String ingredients, int fdcId, NutrientList nutrientList) {
+    public FoodReport(String description, String ingredients, int fdcId, List<FoodNutrient> nutrientList) {
         this.description = description;
         this.ingredients = ingredients;
         this.fdcId = fdcId;
-        this.labelNutrients = nutrientList;
+        this.foodNutrients = nutrientList;
     }
 
     public String getDescription() {
@@ -30,8 +28,8 @@ public class FoodReport {
         return fdcId;
     }
 
-    public NutrientList getNutrientList() {
-        return labelNutrients;
+    public List<FoodNutrient> getNutrientList() {
+        return foodNutrients;
     }
 
     @Override
@@ -39,12 +37,12 @@ public class FoodReport {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FoodReport that = (FoodReport) o;
-        return fdcId == that.fdcId && Objects.equals(description, that.description) && Objects.equals(ingredients, that.ingredients) && Objects.equals(labelNutrients, that.labelNutrients);
+        return fdcId == that.fdcId && Objects.equals(description, that.description) && Objects.equals(ingredients, that.ingredients) && Objects.equals(foodNutrients, that.foodNutrients);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(description, ingredients, fdcId, labelNutrients);
+        return Objects.hash(description, ingredients, fdcId, foodNutrients);
     }
 
     @Override
@@ -53,8 +51,27 @@ public class FoodReport {
                 "description='" + description + '\'' +
                 ", ingredients='" + ingredients + '\'' +
                 ", fdcId='" + fdcId + '\'' +
-                ", nutrientList='" + labelNutrients +'\'' +
+                ", nutrientList='" + getNutrients() + '\'' +
                 '}';
     }
+
+    public String getNutrients() {
+        if (foodNutrients == null) return null;
+        StringBuilder res = new StringBuilder();
+        for (FoodNutrient nutrient : foodNutrients)
+            if (nutrient.getNutrient().getName().contains("Energy") ||
+                    nutrient.getNutrient().getName().contains("Protein") ||
+                    nutrient.getNutrient().getName().contains("lipid") ||
+                    nutrient.getNutrient().getName().contains("Carbohydrate") ||
+                    nutrient.getNutrient().getName().contains("Fiber")) {
+                res.append(nutrient.getNutrient().getName());
+                res.append("='");
+                res.append(nutrient.getAmount());
+                res.append(nutrient.getNutrient().getUnitName());
+                res.append("' ");
+            }
+        return res.toString();
+    }
+
 }
 
