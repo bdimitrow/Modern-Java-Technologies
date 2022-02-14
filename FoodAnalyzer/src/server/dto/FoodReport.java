@@ -1,18 +1,21 @@
 package server.dto;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Objects;
 
 public class FoodReport {
     private final String description;
     private final String ingredients;
     private final int fdcId;
-    private final NutrientList nutrientList;
+    @SerializedName("foodNutrients")
+    private final NutrientList labelNutrients;
 
     public FoodReport(String description, String ingredients, int fdcId, NutrientList nutrientList) {
         this.description = description;
         this.ingredients = ingredients;
         this.fdcId = fdcId;
-        this.nutrientList = nutrientList;
+        this.labelNutrients = nutrientList;
     }
 
     public String getDescription() {
@@ -28,7 +31,7 @@ public class FoodReport {
     }
 
     public NutrientList getNutrientList() {
-        return nutrientList;
+        return labelNutrients;
     }
 
     @Override
@@ -36,12 +39,12 @@ public class FoodReport {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FoodReport that = (FoodReport) o;
-        return fdcId == that.fdcId && Objects.equals(description, that.description) && Objects.equals(ingredients, that.ingredients) && Objects.equals(nutrientList, that.nutrientList);
+        return fdcId == that.fdcId && Objects.equals(description, that.description) && Objects.equals(ingredients, that.ingredients) && Objects.equals(labelNutrients, that.labelNutrients);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(description, ingredients, fdcId, nutrientList);
+        return Objects.hash(description, ingredients, fdcId, labelNutrients);
     }
 
     @Override
@@ -49,8 +52,8 @@ public class FoodReport {
         return "FoodReport{" +
                 "description='" + description + '\'' +
                 ", ingredients='" + ingredients + '\'' +
-                ", fdcId=" + fdcId +
-                ", nutrientList=" + nutrientList +
+                ", fdcId='" + fdcId + '\'' +
+                ", nutrientList='" + labelNutrients +'\'' +
                 '}';
     }
 }

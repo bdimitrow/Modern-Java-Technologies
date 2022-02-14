@@ -19,7 +19,7 @@ public class FoodHttpClient {
     public static final String URL_DELIMITER = "%20";
     private static final String API_KEY = "We5UALb9buICMpssP0NRPDneFLC9pAhctVG07lPv";
     private static final String FOOD_URL = "https://api.nal.usda.gov/fdc/v1/foods/search?query=%s&requireAllWords=true&api_key=%s";
-    private static final String FOOD_REPORT_URL = "https://api.nal.usda.gov/fdc/v1/food/%s&api_key=%s";
+    private static final String FOOD_REPORT_URL_TEMPLATE = "https://api.nal.usda.gov/fdc/v1/food/%s?api_key=%s";
 
     private final HttpClient httpClient;
     private final Gson gson;
@@ -30,7 +30,7 @@ public class FoodHttpClient {
     }
 
     public FoodReport getFoodReport(String fcdId) throws FoodNotFoundException, BadRequestException {
-        String uriFormatted = String.format(FOOD_REPORT_URL, fcdId, API_KEY);
+        String uriFormatted = String.format(FOOD_REPORT_URL_TEMPLATE, fcdId, API_KEY);
         URI uri = URI.create(uriFormatted);
         String response = getResponse(uri);
         if (response == null) {

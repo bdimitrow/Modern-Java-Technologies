@@ -1,28 +1,30 @@
 package server.dto;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Objects;
 
 public class NutrientList {
-    private Nutrient caloeries; // energiina stonost
-    private Nutrient protein; // beltyci
-    private Nutrient fat; //maznini
-    private Nutrient carbohydrates; //vuglehidrati
-    private Nutrient fiber; //fibri
+    private final Nutrient calories;
+    private final Nutrient protein;
+    private final Nutrient fat;
+    private final Nutrient carbohydrates;
+    private final Nutrient fiber;
 
-    public NutrientList(Nutrient caloeries,
+    public NutrientList(Nutrient calories,
                         Nutrient protein,
                         Nutrient fat,
                         Nutrient carbohydrates,
                         Nutrient fiber) {
-        this.caloeries = caloeries;
+        this.calories = calories;
         this.protein = protein;
         this.fat = fat;
         this.carbohydrates = carbohydrates;
         this.fiber = fiber;
     }
 
-    public Nutrient getCaloeries() {
-        return caloeries;
+    public Nutrient getCalories() {
+        return calories;
     }
 
     public Nutrient getProtein() {
@@ -46,18 +48,18 @@ public class NutrientList {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NutrientList that = (NutrientList) o;
-        return Objects.equals(caloeries, that.caloeries) && Objects.equals(protein, that.protein) && Objects.equals(fat, that.fat) && Objects.equals(carbohydrates, that.carbohydrates) && Objects.equals(fiber, that.fiber);
+        return Objects.equals(calories, that.calories) && Objects.equals(protein, that.protein) && Objects.equals(fat, that.fat) && Objects.equals(carbohydrates, that.carbohydrates) && Objects.equals(fiber, that.fiber);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(caloeries, protein, fat, carbohydrates, fiber);
+        return Objects.hash(calories, protein, fat, carbohydrates, fiber);
     }
 
     @Override
     public String toString() {
         return "NutrientList{" +
-                "caloeries=" + caloeries.getValue() +
+                "calories=" + calories.getValue() +
                 ", protein=" + protein.getValue() +
                 ", fat=" + fat.getValue() +
                 ", carbohydrates=" + carbohydrates.getValue() +

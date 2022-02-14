@@ -1,18 +1,23 @@
 package server;
 
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
 import exceptions.BadRequestException;
 import exceptions.FoodNotFoundException;
 import server.cache.LRUCache;
-import server.dto.BrandedFood;
 import server.dto.Food;
 import server.dto.FoodList;
 import server.dto.FoodReport;
 
-import java.io.BufferedWriter;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
@@ -22,7 +27,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,18 +41,16 @@ public class FoodAnalyzerServer implements AutoCloseable {
     private static final int BUFFER_SIZE = 1024;
     private static final int DEFAULT_CACHE_SIZE = 1024;
     private static final String SERVER_HOST = "localhost";
-    private static final String API_KEY = "We5UALb9buICMpssP0NRPDneFLC9pAhctVG07lPv";
-    private static final String API_URL = "https://api.nal.usda.gov/fdc/v1/";
+    private static final String CODE_ARGUMENT = "--code";
+    private static final String IMAGE_ARGUMENT = "--image";
     private static boolean isStarted = true;
 
     private final ServerSocketChannel serverSocketChannel;
     private final Selector selector;
     private final ByteBuffer messageBuffer;
     private final FoodHttpClient foodHttpClient;
-    private Map<Integer, Food> cache;
-    private LRUCache<Food> lruCache;
-    private LRUCache<BrandedFood> brandedFoodCache;
-    private boolean isCacheUpdated = false;
+    private final Map<Integer, Food> cache;
+    private final LRUCache<Food> lruCache;
 
 
     private final static Logger logger = Logger.getLogger(FoodAnalyzerServer.class.getName());
@@ -65,7 +67,6 @@ public class FoodAnalyzerServer implements AutoCloseable {
 
         cache = new ConcurrentHashMap<>();
         lruCache = new LRUCache<>(DEFAULT_CACHE_SIZE);
-        brandedFoodCache = new LRUCache<>(DEFAULT_CACHE_SIZE);
         setupLogger();
     }
 
@@ -81,7 +82,6 @@ public class FoodAnalyzerServer implements AutoCloseable {
 
         cache = new ConcurrentHashMap<>();
         lruCache = new LRUCache<>(DEFAULT_CACHE_SIZE);
-        brandedFoodCache = new LRUCache<>(DEFAULT_CACHE_SIZE);
         setupLogger();
     }
 
@@ -193,31 +193,59 @@ public class FoodAnalyzerServer implements AutoCloseable {
             return result.toString();
         }
         if (command.equalsIgnoreCase("get-food-by-barcode")) {
-            String argumentName = "--code";
-            if (commandParts[1].contains(argumentName)) {
-                String upc = commandParts[1].substring(argumentName.length() + 1);
-//                return displayFoodByUPC(upc);
+            if (commandParts[1].contains(CODE_ARGUMENT)) {
+                String upc = commandParts[1].substring(CODE_ARGUMENT.length() + 1);
+                return getFoodByUpcCode(upc);
             }
-            String imagePath = commandParts[1].substring(argumentName.length() + 1);
-//            return displayFoodByImage(imagePath);
+            if (commandParts[1].contains(IMAGE_ARGUMENT)) {
+                String imagePath = commandParts[1].substring(IMAGE_ARGUMENT.length() + 1);
+                return getFoodByImage(imagePath);
+            }
+            return "No GTIN/UPC was provided. ";
         }
 
         return "Unknown command!";
     }
 
-    private Food getFoodByUpcCode(String upcCode) {
+    private String getFoodByImage(String path) {
+        if (!new File(path).exists()) {
+            return "Image could not be opened. ";
+        }
+        String upc = extractUPCFromImage(path);
+        if (upc == null) {
+            return "Food with that barcode could not be found in cache. ";
+        }
+        return getFoodByUpcCode(upc);
+    }
 
+    public String extractUPCFromImage(String path) {
+        File imgFile = new File(path);
+        BufferedImage bufferedImage;
+        try {
+            bufferedImage = ImageIO.read(imgFile);
+        } catch (IOException e) {
+            logger.log(Level.INFO, "Error while opening image: " + e);
+            return null;
+        }
+        LuminanceSource source = new BufferedImageLuminanceSource(bufferedImage);
+        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 
-        return brandedFoodCache.getCache().forEach(f->f.getFdcId().equals(upcCode));
+        try {
+            Result result = new MultiFormatReader().decode(bitmap);
+            return result.getText();
+        } catch (NotFoundException e) {
+            logger.log(Level.INFO,"No barcode was found. ");
+            return null;
+        }
+    }
+
+    private String getFoodByUpcCode(String upcCode) {
+        return lruCache.getCache().stream().filter(f -> f.getGtinUpc().equals(upcCode)).toString();
     }
 
     private void cacheFood(Food food) {
         cache.put(food.getFdcId(), food);
         lruCache.set(food);
-        if (food instanceof BrandedFood) {
-            brandedFoodCache.set((BrandedFood) food);
-        }
-
     }
 
     private void cacheFoodList(FoodList foodList) {
