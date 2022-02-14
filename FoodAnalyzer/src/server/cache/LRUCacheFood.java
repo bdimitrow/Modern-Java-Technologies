@@ -5,16 +5,16 @@ import server.dto.Food;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class LRUCache<Type> implements Cache<Type> {
-    private int MAX_CAPACITY = 1000;
+public class LRUCacheFood implements Cache {
+    private static final int MAX_CAPACITY = 1000;
     private final Set<Food> cache;
     private int capacity;
 
-    public LRUCache() {
+    public LRUCacheFood() {
         this.cache = new LinkedHashSet<>(MAX_CAPACITY);
     }
 
-    public LRUCache(int size) {
+    public LRUCacheFood(int size) {
         this.capacity = size;
         this.cache = new LinkedHashSet<>(capacity);
     }

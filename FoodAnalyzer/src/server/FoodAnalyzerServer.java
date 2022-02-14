@@ -9,7 +9,7 @@ import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 import exceptions.BadRequestException;
 import exceptions.FoodNotFoundException;
-import server.cache.LRUCache;
+import server.cache.LRUCacheFood;
 import server.dto.Food;
 import server.dto.FoodList;
 import server.dto.FoodReport;
@@ -37,7 +37,7 @@ import java.util.logging.SimpleFormatter;
 public class FoodAnalyzerServer implements AutoCloseable {
 
     private static final int SERVER_PORT = 7777;
-    private static final int BUFFER_SIZE = 8 * 1024;
+    private static final int BUFFER_SIZE = 64 * 1024;
     private static final int DEFAULT_CACHE_SIZE = 1024;
     private static final String SERVER_HOST = "localhost";
     private static final String CODE_ARGUMENT = "--code";
@@ -49,13 +49,13 @@ public class FoodAnalyzerServer implements AutoCloseable {
     private final ByteBuffer messageBuffer;
     private final FoodHttpClient foodHttpClient;
     private final Map<Integer, Food> cache;
-    private final LRUCache<Food> lruCache;
+    private final LRUCacheFood lruCacheFood;
 
 
-    private final static Logger logger = Logger.getLogger(FoodAnalyzerServer.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(FoodAnalyzerServer.class.getName());
 
     public static Logger getLogger() {
-        return logger;
+        return LOGGER;
     }
 
     public FoodAnalyzerServer() throws IOException {
@@ -69,7 +69,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
         foodHttpClient = new FoodHttpClient(HttpClient.newHttpClient());
 
         cache = new ConcurrentHashMap<>();
-        lruCache = new LRUCache<>(DEFAULT_CACHE_SIZE);
+        lruCacheFood = new LRUCacheFood(DEFAULT_CACHE_SIZE);
         setupLogger();
     }
 
@@ -84,7 +84,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
         foodHttpClient = new FoodHttpClient(HttpClient.newHttpClient());
 
         cache = new ConcurrentHashMap<>();
-        lruCache = new LRUCache<>(DEFAULT_CACHE_SIZE);
+        lruCacheFood = new LRUCacheFood(DEFAULT_CACHE_SIZE);
         setupLogger();
     }
 
@@ -125,7 +125,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
             }
             //@TODO server.cache??
         } catch (IOException e) {
-            logger.log(Level.INFO, "IOException occurred: ", e);
+            LOGGER.log(Level.INFO, "IOException occurred: ", e);
         }
     }
 
@@ -135,7 +135,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
             messageBuffer.clear();
             int r = socketChannel.read(messageBuffer);
             if (r == -1) {
-                logger.log(Level.INFO, "Nothing to read. ");
+                LOGGER.log(Level.INFO, "Nothing to read. ");
                 stopServer();
                 return;
             }
@@ -143,8 +143,8 @@ public class FoodAnalyzerServer implements AutoCloseable {
             String message = new String(messageBuffer.array(), 0, messageBuffer.limit()).trim();
             String resultFromCommand = handleCommand(message);
 
-            logger.log(Level.INFO, "Message from client: " + message);
-            logger.log(Level.INFO, "Response: " + resultFromCommand);
+            LOGGER.log(Level.INFO, "Message from client: " + message);
+            LOGGER.log(Level.INFO, "Response: " + resultFromCommand);
 
             String response = resultFromCommand + System.lineSeparator();
             messageBuffer.clear();
@@ -152,10 +152,10 @@ public class FoodAnalyzerServer implements AutoCloseable {
             messageBuffer.flip();
             socketChannel.write(messageBuffer);
         } catch (IOException e) {
-            logger.log(Level.INFO, "IOException: " + e.getMessage());
+            LOGGER.log(Level.INFO, "IOException: " + e.getMessage());
             stopServer();
         } catch (FoodNotFoundException | BadRequestException e) {
-            logger.log(Level.WARNING, "IOException: " + e.getMessage());
+            LOGGER.log(Level.WARNING, "IOException: " + e.getMessage());
         }
     }
 
@@ -227,7 +227,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
         try {
             bufferedImage = ImageIO.read(imgFile);
         } catch (IOException e) {
-            logger.log(Level.INFO, "Error while opening image: " + e);
+            LOGGER.log(Level.INFO, "Error while opening image: " + e);
             return null;
         }
         LuminanceSource source = new BufferedImageLuminanceSource(bufferedImage);
@@ -237,18 +237,18 @@ public class FoodAnalyzerServer implements AutoCloseable {
             Result result = new MultiFormatReader().decode(bitmap);
             return result.getText();
         } catch (NotFoundException e) {
-            logger.log(Level.INFO, "No barcode was found. ");
+            LOGGER.log(Level.INFO, "No barcode was found. ");
             return null;
         }
     }
 
     private String getFoodByUpcCode(String upcCode) {
-        return lruCache.getByUpcCode(upcCode).toString();
+        return lruCacheFood.getByUpcCode(upcCode).toString();
     }
 
     private void cacheFood(Food food) {
         cache.put(food.getFdcId(), food);
-        lruCache.set(food);
+        lruCacheFood.set(food);
     }
 
     private void cacheFoodList(FoodList foodList) {
@@ -258,7 +258,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
     private void setupLogger() throws IOException {
         FileHandler fileHandler = new FileHandler("resources/log.txt", true);
         fileHandler.setFormatter(new SimpleFormatter());
-        logger.addHandler(fileHandler);
-        logger.setUseParentHandlers(false);
+        LOGGER.addHandler(fileHandler);
+        LOGGER.setUseParentHandlers(false);
     }
 }

@@ -1,17 +1,32 @@
 package server.dto;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
 public class FoodList {
+    private int totalHits;
     private Set<Food> foods;
 
-    public FoodList(Set<Food> foods) {
+    public FoodList() {
+        this.foods = new LinkedHashSet<>();
+    }
+
+    public FoodList(Set<Food> foods, int totalHits) {
         this.foods = foods;
+        this.totalHits = totalHits;
     }
 
     public Set<Food> getFoods() {
-        return foods;
+        return this.foods;
+    }
+
+    public void addFoods(Set<Food> other) {
+        this.foods.addAll(other);
+    }
+
+    public int getTotalHits() {
+        return this.totalHits;
     }
 
     @Override

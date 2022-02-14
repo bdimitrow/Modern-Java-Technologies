@@ -37,7 +37,10 @@ public class FoodReport {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FoodReport that = (FoodReport) o;
-        return fdcId == that.fdcId && Objects.equals(description, that.description) && Objects.equals(ingredients, that.ingredients) && Objects.equals(foodNutrients, that.foodNutrients);
+        return fdcId == that.fdcId &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(ingredients, that.ingredients) &&
+                Objects.equals(foodNutrients, that.foodNutrients);
     }
 
     @Override

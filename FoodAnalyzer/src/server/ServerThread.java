@@ -12,7 +12,7 @@ public class ServerThread implements Runnable {
 
         while ((consoleInput = scanner.nextLine()) != null) {
             if (consoleInput.equalsIgnoreCase("disconnect")) {
-                FoodAnalyzerServer.getLogger().log(Level.INFO,"Disconnect!");
+                FoodAnalyzerServer.getLogger().log(Level.INFO, "Disconnect!");
                 FoodAnalyzerServer.stopServer();
                 break;
             }

@@ -16,10 +16,11 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 
 public class FoodHttpClient {
-    public static final String URL_DELIMITER = "%20";
+    private static final int DEFAULT_PAGE_SIZE = 50;
     private static final String API_KEY = "We5UALb9buICMpssP0NRPDneFLC9pAhctVG07lPv";
-    private static final String FOOD_URL = "https://api.nal.usda.gov/fdc/v1/foods/search?query=%s&requireAllWords=true&api_key=%s";
-    private static final String FOOD_REPORT_URL_TEMPLATE = "https://api.nal.usda.gov/fdc/v1/food/%s?api_key=%s";
+    private static final String GET_FOOD_URL_TEMPLATE = "https://api.nal.usda.gov/fdc/v1/foods/" +
+                    "search?query=%s&requireAllWords=true&pageSize=50&pageNumber=%d&api_key=%s";
+    private static final String GET_FOOD_REPORT_URL_TEMPLATE = "https://api.nal.usda.gov/fdc/v1/food/%s?api_key=%s";
 
     private final HttpClient httpClient;
     private final Gson gson;
@@ -30,7 +31,7 @@ public class FoodHttpClient {
     }
 
     public FoodReport getFoodReport(String fcdId) throws FoodNotFoundException, BadRequestException {
-        String uriFormatted = String.format(FOOD_REPORT_URL_TEMPLATE, fcdId, API_KEY);
+        String uriFormatted = String.format(GET_FOOD_REPORT_URL_TEMPLATE, fcdId, API_KEY);
         URI uri = URI.create(uriFormatted);
         String response = getResponse(uri);
         if (response == null) {
@@ -47,14 +48,22 @@ public class FoodHttpClient {
         } else {
             searchTerm = String.join("+", searchWords);
         }
-        String uriFormatted = String.format(FOOD_URL, searchTerm, API_KEY);
-        URI uri = URI.create(uriFormatted);
-        String response = getResponse(uri);
-        if (response == null) {
-            return null;
-        }
+        int totalResults;
+        int currentPage = 1;
+        FoodList allResults = new FoodList();
+        do {
+            String uriFormatted = String.format(GET_FOOD_URL_TEMPLATE, searchTerm, currentPage, API_KEY);
+            URI uri = URI.create(uriFormatted);
+            String response = getResponse(uri);
+            if (response == null) {
+                return allResults;
+            }
+            FoodList current = gson.fromJson(response, FoodList.class);
+            totalResults = current.getTotalHits();
+            allResults.addFoods(current.getFoods());
+        } while (currentPage++ * DEFAULT_PAGE_SIZE < totalResults);
 
-        return gson.fromJson(response, FoodList.class);
+        return allResults;
     }
 
 

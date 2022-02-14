@@ -10,6 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class FoodAnalyzerClient {
+    private final static String SERVER_HOST = "localhost";
+    private final static int SERVER_PORT = 7777;
     private String host;
     private int port;
 
@@ -19,8 +21,6 @@ public class FoodAnalyzerClient {
     }
 
     public static void main(String[] args) {
-        String SERVER_HOST = "localhost";
-        int SERVER_PORT = 7777;
         new FoodAnalyzerClient(SERVER_HOST, SERVER_PORT).start();
     }
 
