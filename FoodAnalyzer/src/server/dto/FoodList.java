@@ -17,6 +17,10 @@ public class FoodList {
         this.totalHits = totalHits;
     }
 
+    public boolean isEmpty() {
+        return foods.isEmpty();
+    }
+
     public Set<Food> getFoods() {
         return this.foods;
     }

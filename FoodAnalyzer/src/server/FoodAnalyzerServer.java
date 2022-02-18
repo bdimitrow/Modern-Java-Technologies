@@ -22,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -221,15 +220,14 @@ public class FoodAnalyzerServer implements AutoCloseable {
 
     private String getFood(String seachedString) throws FoodNotFoundException, BadRequestException {
         FoodList result = lruCacheFood.getByKeywords(seachedString);
-        if (result == null) {
+        if (result.isEmpty()) {
             result = foodHttpClient.getFoodsBySearch(seachedString);
         }
-        if (result != null) {
-            cacheFoodList(result);
-            return result.toString();
+        if (result.isEmpty()) {
+            return "Such a food could not be found.";
         }
-
-        return "Such a food could not be found.";
+        cacheFoodList(result);
+        return result.toString();
     }
 
     private String getFoodByImage(String path) {

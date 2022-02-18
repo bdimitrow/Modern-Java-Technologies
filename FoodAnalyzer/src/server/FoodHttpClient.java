@@ -19,7 +19,7 @@ public class FoodHttpClient {
     private static final int DEFAULT_PAGE_SIZE = 50;
     private static final String API_KEY = "We5UALb9buICMpssP0NRPDneFLC9pAhctVG07lPv";
     private static final String GET_FOOD_URL_TEMPLATE = "https://api.nal.usda.gov/fdc/v1/foods/" +
-                    "search?query=%s&requireAllWords=true&pageSize=50&pageNumber=%d&api_key=%s";
+            "search?query=%s&requireAllWords=true&pageSize=50&pageNumber=%d&api_key=%s";
     private static final String GET_FOOD_REPORT_URL_TEMPLATE = "https://api.nal.usda.gov/fdc/v1/food/%s?api_key=%s";
 
     private final HttpClient httpClient;
@@ -37,6 +37,7 @@ public class FoodHttpClient {
         if (response == null) {
             return null;
         }
+
         return gson.fromJson(response, FoodReport.class);
     }
 
@@ -67,10 +68,10 @@ public class FoodHttpClient {
     }
 
 
-    private String getResponse(URI uri) throws FoodNotFoundException, BadRequestException {
+    public String getResponse(URI uri) throws FoodNotFoundException, BadRequestException {
         HttpRequest httpRequest = HttpRequest.newBuilder().uri(uri).build();
 
-        String response = null;
+        String response;
         try {
             HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             if (httpResponse.statusCode() == HTTP_NOT_FOUND) {
