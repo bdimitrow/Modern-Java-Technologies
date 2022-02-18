@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
@@ -8,6 +9,8 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
+import exceptions.BadRequestException;
+import exceptions.FoodNotFoundException;
 import server.cache.LRUCacheFood;
 import server.dto.Food;
 import server.dto.FoodList;
@@ -15,10 +18,15 @@ import server.dto.FoodReport;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
@@ -28,6 +36,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -192,12 +201,8 @@ public class FoodAnalyzerServer implements AutoCloseable {
             return result != null ? result.toString() : "Such a food could not be found";
         }
         if (command.equalsIgnoreCase("get-food")) {
-            FoodList result = foodHttpClient.getFoodsBySearch(commandMessage.substring(command.length() + 1));
-            if (result != null) {
-                cacheFoodList(result);
-                return result.toString();
-            }
-            return "Such a food could not be found.";
+            String searchString = commandMessage.substring(command.length() + 1);
+            return getFood(searchString);
         }
         if (command.equalsIgnoreCase("get-food-by-barcode")) {
             if (commandParts[1].contains(CODE_ARGUMENT)) {
@@ -214,6 +219,19 @@ public class FoodAnalyzerServer implements AutoCloseable {
         return "Unknown command!";
     }
 
+    private String getFood(String seachedString) throws FoodNotFoundException, BadRequestException {
+        FoodList result = lruCacheFood.getByKeywords(seachedString);
+        if (result == null) {
+            result = foodHttpClient.getFoodsBySearch(seachedString);
+        }
+        if (result != null) {
+            cacheFoodList(result);
+            return result.toString();
+        }
+
+        return "Such a food could not be found.";
+    }
+
     private String getFoodByImage(String path) {
         if (!new File(path).exists()) {
             return "Image could not be opened. ";
@@ -222,6 +240,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
         if (upc == null) {
             return "Food with that barcode could not be found in cache. ";
         }
+
         return getFoodByUpcCode(upc);
     }
 
@@ -263,7 +282,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
 
     private void saveFoodsToFile() {
         Gson gson = new Gson();
-        try (FileOutputStream foodFileStream = new FileOutputStream(new File("resources/cacheFood.txt"));
+        try (FileOutputStream foodFileStream = new FileOutputStream("resources/cacheFood.txt");
              BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(foodFileStream))
         ) {
             gson.toJson(cache.values(), bufferedWriter);
@@ -274,7 +293,21 @@ public class FoodAnalyzerServer implements AutoCloseable {
     }
 
     private void loadFoodFromFile() {
-
+        Gson gson = new Gson();
+        try (InputStream inputStream = new FileInputStream("resources/cacheFood.txt");
+             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
+        ) {
+            String fileContent = bufferedReader.readLine();
+            if (fileContent == null) {
+                return;
+            }
+            LOGGER.log(Level.INFO, "File content: " + fileContent);
+            List<Food> foodsInFile = gson.fromJson(fileContent, new TypeToken<List<Food>>() {
+            }.getType());
+            foodsInFile.forEach(this::cacheFood);
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO, "IO exception occured: " + e.getMessage());
+        }
     }
 
     private void setupLogger() throws IOException {
