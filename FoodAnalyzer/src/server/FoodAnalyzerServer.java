@@ -140,7 +140,6 @@ public class FoodAnalyzerServer implements AutoCloseable {
             int r = socketChannel.read(messageBuffer);
             if (r == -1) {
                 LOGGER.log(Level.INFO, "Nothing to read. ");
-                stopServer();
                 return;
             }
             messageBuffer.flip();
@@ -159,7 +158,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
             LOGGER.log(Level.INFO, "IOException: " + e.getMessage());
             stopServer();
         } catch (FoodNotFoundException | BadRequestException e) {
-            LOGGER.log(Level.WARNING, "IOException: " + e.getMessage());
+            LOGGER.log(Level.INFO, "IOException: " + e.getMessage());
         }
     }
 
