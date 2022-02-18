@@ -110,6 +110,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
         try {
             serverSocketChannel.configureBlocking(false);
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+            loadFoodFromFile();
 
             ServerThread serverThread = new ServerThread();
             Thread serverReaderThread = new Thread(serverThread);
@@ -133,6 +134,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
                     keyIterator.remove();
                 }
             }
+
             saveFoodsToFile();
         } catch (IOException e) {
             LOGGER.log(Level.INFO, "IOException occurred: ", e);

@@ -2,14 +2,12 @@ package server;
 
 import exceptions.BadRequestException;
 import exceptions.FoodNotFoundException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import server.dto.Food;
 import server.dto.FoodList;
@@ -35,10 +33,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FoodHttpClientTest {
-
-//    @Mock
-//    private HttpClient httpClientMock;
-
     @Mock
     private HttpResponse<String> httpResponseMock;
 
@@ -53,7 +47,7 @@ class FoodHttpClientTest {
     }
 
     @Test
-    void getFoodReportNotFound() throws FoodNotFoundException, BadRequestException {
+    void getFoodReportNotFound() {
         when(httpResponseMock.statusCode()).thenReturn(HTTP_NOT_FOUND);
 
         assertThrows(FoodNotFoundException.class,
@@ -76,37 +70,11 @@ class FoodHttpClientTest {
         assertNull(foodHttpClient.getFoodReport("123"));
     }
 
-    private String responseBody;
-
-
     @Disabled
     @Test
     void getFoodReport() throws FoodNotFoundException, BadRequestException {
-        String reponseReport = """
-                {
-                    "description": "HAM",
-                    "foodNutrients": [
-                        {
-                            "type": "FoodNutrient",
-                            "nutrient": {
-                                "id": 1008,
-                                "number": "208",
-                                "name": "Energy",
-                                "rank": 300,
-                                "unitName": "kcal"
-                            },
-                            "amount": 90.00000000
-                        }
-                    ],
-                    "dataType": "Branded",
-                    "gtinUpc": "677684412056",
-                    "ingredients": "HAM SALT, SUGAR",
-                """;
-        when(httpResponseMock.body()).thenReturn(reponseReport);
-        FoodReport expected = new FoodReport("HAM","HAM SALT, SUGAR",2167267, List.of(new FoodNutrient(new Nutrient("Energy","kcal"),90.0)));
-
-        System.out.println(expected.toString());
-        System.out.println(foodHttpClient.getFoodReport("123").toString());
+        when(httpResponseMock.body()).thenReturn(RESPONSE_REPORT);
+        FoodReport expected = new FoodReport("HAM", "HAM SALT, SUGAR", 2167267, List.of(new FoodNutrient(new Nutrient("Energy", "kcal"), 90.0)));
 
         assertEquals(expected.toString(), foodHttpClient.getFoodReport("123").toString());
     }
@@ -114,38 +82,59 @@ class FoodHttpClientTest {
     @Disabled
     @Test
     void getFoodsBySearch() throws FoodNotFoundException, BadRequestException {
-        when(httpResponseMock.body()).thenReturn("""
-                {
-                "totalHits": 1,
-                "foods": [
-                {
-                "fdcId": 2167267,
-                "description": "HAM",
-                "dataType": "Branded",
-                "gtinUpc": "677684412056",
-                "ingredients": "HAM",
-                 "foodNutrients": [{
-                "nutrientId": 1008,
-                "nutrientName": "Energy",
-                "nutrientNumber": "208",
-                "unitName": "KCAL",
-                "derivationCode": "LCCS",
-                "derivationDescription": "Calculated from value per serving size measure",
-                "derivationId": 70,
-                "value": 90,
-                "foodNutrientSourceId": 9,
-                "foodNutrientSourceCode": "12",
-                "foodNutrientSourceDescription": "Manufacturer's analytical; partial documentation",
-                "rank": 300,
-                "indentLevel": 1,
-                "foodNutrientId": 25938181
-                }],
-                }]
-                }""");
-        FoodList expected = new FoodList(Set.of(new Food(1,"test","t","12")),1);
+        when(httpResponseMock.body()).thenReturn(RESPONSE_SEARCH);
+        FoodList expected = new FoodList(Set.of(new Food(1, "test", "t", "12")), 1);
 
         assertEquals(expected.toString(), foodHttpClient.getFoodsBySearch("123").toString());
     }
 
+    private static final String RESPONSE_REPORT = """
+            {
+                "description": "HAM",
+                "foodNutrients": [
+                    {
+                        "type": "FoodNutrient",
+                        "nutrient": {
+                            "id": 1008,
+                            "number": "208",
+                            "name": "Energy",
+                            "rank": 300,
+                            "unitName": "kcal"
+                        },
+                        "amount": 90.00000000
+                    }
+                ],
+                "dataType": "Branded",
+                "gtinUpc": "677684412056",
+                "ingredients": "HAM SALT, SUGAR",
+            """;
 
+    private static final String RESPONSE_SEARCH = """
+            {
+            "totalHits": 1,
+            "foods": [
+            {
+            "fdcId": 2167267,
+            "description": "HAM",
+            "dataType": "Branded",
+            "gtinUpc": "677684412056",
+            "ingredients": "HAM",
+             "foodNutrients": [{
+            "nutrientId": 1008,
+            "nutrientName": "Energy",
+            "nutrientNumber": "208",
+            "unitName": "KCAL",
+            "derivationCode": "LCCS",
+            "derivationDescription": "Calculated from value per serving size measure",
+            "derivationId": 70,
+            "value": 90,
+            "foodNutrientSourceId": 9,
+            "foodNutrientSourceCode": "12",
+            "foodNutrientSourceDescription": "Manufacturer's analytical; partial documentation",
+            "rank": 300,
+            "indentLevel": 1,
+            "foodNutrientId": 25938181
+            }],
+            }]
+            }""";
 }
