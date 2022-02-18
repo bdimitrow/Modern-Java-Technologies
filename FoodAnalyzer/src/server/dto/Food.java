@@ -37,9 +37,9 @@ public class Food {
         if (o == null || getClass() != o.getClass()) return false;
         Food food = (Food) o;
         return fdcId == food.fdcId &&
-                Objects.equals(description, food.description) &&
-                Objects.equals(dataType, food.dataType) &&
-                Objects.equals(gtinUpc, food.gtinUpc);
+               Objects.equals(description, food.description) &&
+               Objects.equals(dataType, food.dataType) &&
+               Objects.equals(gtinUpc, food.gtinUpc);
     }
 
     @Override

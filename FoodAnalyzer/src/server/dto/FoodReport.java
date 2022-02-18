@@ -38,9 +38,9 @@ public class FoodReport {
         if (o == null || getClass() != o.getClass()) return false;
         FoodReport that = (FoodReport) o;
         return fdcId == that.fdcId &&
-                Objects.equals(description, that.description) &&
-                Objects.equals(ingredients, that.ingredients) &&
-                Objects.equals(foodNutrients, that.foodNutrients);
+               Objects.equals(description, that.description) &&
+               Objects.equals(ingredients, that.ingredients) &&
+               Objects.equals(foodNutrients, that.foodNutrients);
     }
 
     @Override
@@ -51,11 +51,11 @@ public class FoodReport {
     @Override
     public String toString() {
         return "FoodReport{" +
-                "description='" + description + '\'' +
-                ", ingredients='" + ingredients + '\'' +
-                ", fdcId='" + fdcId + '\'' +
-                ", nutrientList='" + getNutrients() + '\'' +
-                '}';
+               "description='" + description + '\'' +
+               ", ingredients='" + ingredients + '\'' +
+               ", fdcId='" + fdcId + '\'' +
+               ", nutrientList='" + getNutrients() + '\'' +
+               '}';
     }
 
     public String getNutrients() {
@@ -63,10 +63,10 @@ public class FoodReport {
         StringBuilder res = new StringBuilder();
         for (FoodNutrient nutrient : foodNutrients)
             if (nutrient.getNutrient().getName().contains("Energy") ||
-                    nutrient.getNutrient().getName().contains("Protein") ||
-                    nutrient.getNutrient().getName().contains("lipid") ||
-                    nutrient.getNutrient().getName().contains("Carbohydrate") ||
-                    nutrient.getNutrient().getName().contains("Fiber")) {
+                nutrient.getNutrient().getName().contains("Protein") ||
+                nutrient.getNutrient().getName().contains("lipid") ||
+                nutrient.getNutrient().getName().contains("Carbohydrate") ||
+                nutrient.getNutrient().getName().contains("Fiber")) {
                 res.append(nutrient.getNutrient().getName());
                 res.append("='");
                 res.append(nutrient.getAmount());

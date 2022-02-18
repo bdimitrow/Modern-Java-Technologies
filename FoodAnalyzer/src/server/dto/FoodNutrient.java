@@ -35,8 +35,8 @@ public class FoodNutrient {
     @Override
     public String toString() {
         return "FoodNutrient{" +
-                "nutrient=" + nutrient +
-                ", amount=" + amount +
-                '}';
+               "nutrient=" + nutrient +
+               ", amount=" + amount +
+               '}';
     }
 }
