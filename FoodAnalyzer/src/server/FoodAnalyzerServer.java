@@ -8,8 +8,6 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
-import exceptions.BadRequestException;
-import exceptions.FoodNotFoundException;
 import server.cache.LRUCacheFood;
 import server.dto.Food;
 import server.dto.FoodList;
@@ -139,15 +137,18 @@ public class FoodAnalyzerServer implements AutoCloseable {
             messageBuffer.clear();
             int r = socketChannel.read(messageBuffer);
             if (r == -1) {
-                LOGGER.log(Level.INFO, "Nothing to read. ");
                 return;
             }
             messageBuffer.flip();
             String message = new String(messageBuffer.array(), 0, messageBuffer.limit()).trim();
-            String resultFromCommand = handleCommand(message);
-
+            String resultFromCommand;
+            try {
+                resultFromCommand = handleCommand(message);
+            } catch (Exception e) {
+                resultFromCommand = e.getMessage();
+            }
             LOGGER.log(Level.INFO, "Message from client: " + message);
-            LOGGER.log(Level.INFO, "Response: " + resultFromCommand);
+            LOGGER.log(Level.INFO, "Response from server: " + resultFromCommand);
 
             String response = resultFromCommand + System.lineSeparator();
             messageBuffer.clear();
@@ -155,9 +156,6 @@ public class FoodAnalyzerServer implements AutoCloseable {
             messageBuffer.flip();
             socketChannel.write(messageBuffer);
         } catch (IOException e) {
-            LOGGER.log(Level.INFO, "IOException: " + e.getMessage());
-            stopServer();
-        } catch (FoodNotFoundException | BadRequestException e) {
             LOGGER.log(Level.INFO, "IOException: " + e.getMessage());
         }
     }
@@ -179,13 +177,13 @@ public class FoodAnalyzerServer implements AutoCloseable {
         selector.close();
     }
 
-    private String handleCommand(String commandMessage) throws FoodNotFoundException, BadRequestException {
+    private String handleCommand(String commandMessage) throws Exception {
         if (commandMessage == null) {
             return null;
         }
         String[] commandParts = commandMessage.split("\\s");
         if (commandParts.length == 1) {
-            return "Invalid command!";
+            return "Invalid command. ";
         }
 
         String command = commandParts[0].trim();
