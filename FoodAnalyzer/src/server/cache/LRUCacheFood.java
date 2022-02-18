@@ -1,6 +1,7 @@
 package server.cache;
 
 import server.dto.Food;
+import server.dto.FoodList;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -30,6 +31,16 @@ public class LRUCacheFood implements Cache {
         cache.remove(food);
         cache.add(food);
         return true;
+    }
+
+    public FoodList getByKeywords(String keywords) {
+        FoodList result = new FoodList();
+        for (Food f : cache) {
+            if (f.getDescription().matches(keywords)) {
+                result.addFoods(Set.of(f));
+            }
+        }
+        return result;
     }
 
     public Food getByUpcCode(String code) {
