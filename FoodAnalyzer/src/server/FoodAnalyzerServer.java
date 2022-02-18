@@ -1,5 +1,6 @@
 package server;
 
+import com.google.gson.Gson;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
@@ -16,8 +17,11 @@ import server.dto.FoodReport;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
@@ -123,7 +127,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
                     keyIterator.remove();
                 }
             }
-            //@TODO server.cache??
+            saveFoodsToFile();
         } catch (IOException e) {
             LOGGER.log(Level.INFO, "IOException occurred: ", e);
         }
@@ -188,12 +192,15 @@ public class FoodAnalyzerServer implements AutoCloseable {
         String command = commandParts[0].trim();
         if (command.equalsIgnoreCase("get-food-report")) {
             FoodReport result = foodHttpClient.getFoodReport(commandParts[1]);
-            return result.toString();
+            return result != null ? result.toString() : "Such a food could not be found";
         }
         if (command.equalsIgnoreCase("get-food")) {
             FoodList result = foodHttpClient.getFoodsBySearch(commandMessage.substring(command.length() + 1));
-            cacheFoodList(result);
-            return result.toString();
+            if (result != null) {
+                cacheFoodList(result);
+                return result.toString();
+            }
+            return "Such a food could not be found.";
         }
         if (command.equalsIgnoreCase("get-food-by-barcode")) {
             if (commandParts[1].contains(CODE_ARGUMENT)) {
@@ -221,7 +228,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
         return getFoodByUpcCode(upc);
     }
 
-    public String extractUPCFromImage(String path) {
+    private String extractUPCFromImage(String path) {
         File imgFile = new File(path);
         BufferedImage bufferedImage;
         try {
@@ -247,12 +254,30 @@ public class FoodAnalyzerServer implements AutoCloseable {
     }
 
     private void cacheFood(Food food) {
-        cache.put(food.getFdcId(), food);
+        if (!cache.containsKey(food.getFdcId())) {
+            cache.put(food.getFdcId(), food);
+        }
         lruCacheFood.set(food);
     }
 
     private void cacheFoodList(FoodList foodList) {
         foodList.getFoods().forEach(this::cacheFood);
+    }
+
+    private void saveFoodsToFile() {
+        Gson gson = new Gson();
+        try (FileOutputStream foodFileStream = new FileOutputStream(new File("resources/cacheFood.txt"));
+             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(foodFileStream))
+        ) {
+            gson.toJson(cache.values(), bufferedWriter);
+            bufferedWriter.flush();
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO, "IO exception occured: " + e.getMessage());
+        }
+    }
+
+    private void loadFoodFromFile() {
+
     }
 
     private void setupLogger() throws IOException {

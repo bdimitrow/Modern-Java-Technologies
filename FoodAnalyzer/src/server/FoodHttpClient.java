@@ -67,7 +67,7 @@ public class FoodHttpClient {
     }
 
 
-    public String getResponse(URI uri) throws FoodNotFoundException, BadRequestException {
+    private String getResponse(URI uri) throws FoodNotFoundException, BadRequestException {
         HttpRequest httpRequest = HttpRequest.newBuilder().uri(uri).build();
 
         String response = null;
