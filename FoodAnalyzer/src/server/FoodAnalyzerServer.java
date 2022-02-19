@@ -141,7 +141,17 @@ public class FoodAnalyzerServer implements AutoCloseable {
         }
     }
 
-    void handleKeyIsReadable(SelectionKey selectionKey) {
+    public static void stopServer() {
+        isStarted = false;
+    }
+
+    @Override
+    public void close() throws Exception {
+        serverSocketChannel.close();
+        selector.close();
+    }
+
+    private void handleKeyIsReadable(SelectionKey selectionKey) {
         SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
         try {
             messageBuffer.clear();
@@ -170,24 +180,14 @@ public class FoodAnalyzerServer implements AutoCloseable {
         }
     }
 
-    void handleKeyIsAcceptable(SelectionKey selectionKey) throws IOException {
+    private void handleKeyIsAcceptable(SelectionKey selectionKey) throws IOException {
         ServerSocketChannel sockChannel = (ServerSocketChannel) selectionKey.channel();
         SocketChannel accept = sockChannel.accept();
         accept.configureBlocking(false);
         accept.register(selector, SelectionKey.OP_READ);
     }
 
-    public static void stopServer() {
-        isStarted = false;
-    }
-
-    @Override
-    public void close() throws Exception {
-        serverSocketChannel.close();
-        selector.close();
-    }
-
-    private String handleCommand(String commandMessage) throws Exception {
+    public String handleCommand(String commandMessage) throws Exception {
         if (commandMessage == null) {
             return null;
         }
@@ -199,7 +199,7 @@ public class FoodAnalyzerServer implements AutoCloseable {
         String command = commandParts[0].trim();
         if (command.equalsIgnoreCase("get-food-report")) {
             FoodReport result = foodHttpClient.getFoodReport(commandParts[1]);
-            return result != null ? result.toString() : "Such a food could not be found";
+            return result != null ? result.toString() : "Such a food could not be found.";
         }
         if (command.equalsIgnoreCase("get-food")) {
             String searchString = commandMessage.substring(command.length() + 1);

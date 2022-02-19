@@ -42,9 +42,14 @@ class LRUCacheFoodTest {
     @Test
     void set() {
         Food four = new Food(12, "test", "type", "12333");
-        assertFalse(lruCache.get(four));
+        assertFalse(lruCache.get(four),"Assert food four is not in the cache.");
         lruCache.set(four);
-        assertTrue(lruCache.get(four));
+        assertTrue(lruCache.get(four),"Assert food four is in the cache.");
+
+        Food one = new Food(1, "des1", "Branded", "123");
+        Food five = new Food(5, "des2", "Normal", "321");
+        lruCache.set(five);
+        assertFalse(lruCache.get(one),"Assert food one is removed because it is least recently used one.");
     }
 
     @Test
